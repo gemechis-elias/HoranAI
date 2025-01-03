@@ -47,6 +47,7 @@ bot.on('message', async (msg) => {
 
     try {
         const correctedText = await correctGrammar(msg.text);
+        const userMessageId = msg.message_id;
         await bot.sendMessage(
             chatId, 
             `<code>${correctedText}</code>\n\n✅ Messages Sent: ${totalMessages}/10\n🕰️ Messages Left: ${messagesLeft}`,
@@ -54,7 +55,8 @@ bot.on('message', async (msg) => {
                 parse_mode: 'HTML',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: 'Translate', callback_data: 'translate' }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }]
+                        [{ text: 'Translate', callback_data: 'translate' }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
+                        [{ text: 'Delete', callback_data: `delete:${userMessageId}` }] 
                     ]
                 }
             }
@@ -64,6 +66,7 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, "An error occurred while processing your message.");
     }
 });
+
 
 
 

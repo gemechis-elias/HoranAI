@@ -33,6 +33,26 @@ bot.on('callback_query', async (query) => {
     }
 });
 
+// Function for typing effect
+async function sendTypingEffect(bot, chatId, text) {
+    let message = '';
+    for (let i = 0; i < text.length; i++) {
+        message += text[i];
+        await bot.editMessageText(`<code>${message}</code>\n \n click to copy`, {
+            chat_id: chatId,
+            message_id: bot.lastSentMessageId,
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: 'Translate', callback_data: 'translate' }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
+                    [{ text: 'Delete', callback_data: `delete:${bot.lastUserMessageId}` }]
+                ]
+            }
+        });
+        await new Promise(res => setTimeout(res, 50));
+    }
+}
+
 // Grammar and Translation
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -42,20 +62,14 @@ bot.on('message', async (msg) => {
 
     try {
         const correctedText = await correctGrammar(msg.text);
-        
-        // Store the user's message ID
-        const userMessageId = msg.message_id;
+        bot.lastUserMessageId = msg.message_id;
 
-        // Send the corrected message with the Delete button
-        const sentMessage = await bot.sendMessage(chatId, `<code>${correctedText}</code>\n \n click to copy`, {
-            parse_mode : 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Translate', callback_data: 'translate' }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
-                    [{ text: 'Delete', callback_data: `delete:${userMessageId}` }]
-                ]
-            }
-        });
+        // Send initial message to start typing effect
+        const sentMessage = await bot.sendMessage(chatId, '<code></code>', { parse_mode: 'HTML' });
+        bot.lastSentMessageId = sentMessage.message_id;
+
+        // Apply typing effect
+        await sendTypingEffect(bot, chatId, correctedText);
     } catch (error) {
         console.error('Error handling message:', error);
         bot.sendMessage(chatId, "An error occurred while processing your message.");
@@ -74,6 +88,5 @@ bot.on('callback_query', async (query) => {
         }
     }
 });
-
 
 console.log("LisanBot is running!");

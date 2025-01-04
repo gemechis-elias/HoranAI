@@ -45,7 +45,9 @@ Create a `.env` file in the root directory with the following keys:
 ```plaintext
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 OPENAI_API_KEY=your-openai-api-key
-TRANSLATE_API_URL=https://api.horansoftware.com/translate
+TRANSLATE_API_URL=your-translation-api-url
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-supabase-key
 ```
 
 ### Running the Bot

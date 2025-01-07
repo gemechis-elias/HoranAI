@@ -23,30 +23,43 @@ async function saveUser(chatId, username) {
 }
 
 // Increment message count
-// Increment message count
 async function incrementMessageCount(chatId) {
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from('users')
         .select('total_messages, last_message_date')
         .eq('user_id', chatId)
         .single();
 
-    const today = new Date().toISOString().split('T')[0];
-    if (!data) return { canSend: false, totalMessages: 0 };
+    const today = new Date().toISOString().split('T')[0];  // Get today's date in yyyy-mm-dd format.
 
-    if (data.last_message_date !== today) {
-        // New day, reset the message count
-        await supabase.from('users').update({ total_messages: 1, last_message_date: today }).eq('user_id', chatId);
-        return { canSend: true, totalMessages: 1 };
+    if (!data) {
+        // If no data is found, return default (user doesn't exist yet).
+        return { canSend: false, totalMessages: 0 };
+    }
+
+    let newMessageCount = data.total_messages;
+
+    // Handle case where last_message_date is null or it's not today
+    if (!data.last_message_date || data.last_message_date.split('T')[0] !== today) {
+        // Update the message count to 1 if it's a new day
+        await supabase.from('users')
+            .update({ total_messages: 1, last_message_date: today })
+            .eq('user_id', chatId);
+        newMessageCount = 1;
     } else if (data.total_messages < 10) {
-        // Increment message count if it's below the limit
-        await supabase.from('users').update({ total_messages: data.total_messages + 1 }).eq('user_id', chatId);
-        return { canSend: true, totalMessages: data.total_messages + 1 };
+        // If the user has sent less than 10 messages, increment the count
+        await supabase.from('users')
+            .update({ total_messages: data.total_messages + 1 })
+            .eq('user_id', chatId);
+        newMessageCount = data.total_messages + 1;
     } else {
-        // Limit reached
+        // If the user has reached the daily message limit, return false
         return { canSend: false, totalMessages: 10 };
     }
+
+    return { canSend: true, totalMessages: newMessageCount };
 }
+
 
 async function getMessageCount(chatId) {
     const { data } = await supabase

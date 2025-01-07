@@ -10,7 +10,7 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username);
-    bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to Horan AI!\nSend me any text or image`, {
+    bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to Horan AI.\nSend me any text or image`, {
         reply_markup: {
             inline_keyboard: [
                 [{ text: 'Settings', callback_data: 'settings' }]

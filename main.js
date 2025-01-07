@@ -24,7 +24,7 @@ bot.onText(/\/start/, async (msg) => {
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     if (query.data === 'help') {
-        bot.sendMessage(chatId, "You can send a message to fix its grammar or translate it! Thank you");
+        bot.sendMessage(chatId, "You can send a message to fix its grammar or translate it!");
     } else if (query.data === 'settings') {
         const userInfo = await getUserInfo(chatId);
         bot.sendPhoto(chatId, userInfo.profilePicUrl, {
@@ -47,16 +47,14 @@ bot.on('message', async (msg) => {
 
     try {
         const correctedText = await correctGrammar(msg.text);
-        const userMessageId = msg.message_id;
         await bot.sendMessage(
             chatId, 
-            `<code>${correctedText}</code>\n\n✅ Messages Sent: ${totalMessages}/10\n🕰️ Messages Left: ${messagesLeft}`,
+            `What do you want to do with this message?`, 
             {
-                parse_mode: 'HTML',
+                reply_to_message_id: msg.message_id,
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: 'Translate', callback_data: `translate:${encodeURIComponent(msg.text)}` }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
-                        [{ text: 'Delete', callback_data: `delete:${userMessageId}` }] 
+                        [{ text: 'Translate', callback_data: `translate:${msg.message_id}` }, { text: 'Grammar Fix', callback_data: `grammar_fix:${msg.message_id}` }]
                     ]
                 }
             }
@@ -67,29 +65,89 @@ bot.on('message', async (msg) => {
     }
 });
 
+
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
 
-    if (query.data.startsWith('delete')) {
+    if (query.data.startsWith('delete:')) {
         try {
-            const [, userMessageId] = query.data.split(':');
-            await bot.deleteMessage(chatId, query.message.message_id); 
-            await bot.deleteMessage(chatId, userMessageId); 
+            // Get the message ID of the message to delete (the one that contains the inline buttons)
+            const messageIdToDelete = query.message.message_id;
+
+            // Delete the message that contains the inline buttons
+            await bot.deleteMessage(chatId, messageIdToDelete);
+            
+            // Optionally, you can also delete the original message that the user replied to
+            const userMessageId = query.message.reply_to_message ? query.message.reply_to_message.message_id : null;
+            if (userMessageId) {
+                await bot.deleteMessage(chatId, userMessageId);
+            }
         } catch (error) {
             console.error('Error deleting messages:', error);
         }
     }
 
-    if (query.data.startsWith('translate')) {
-        try {
-            const [, textToTranslate] = query.data.split(':');
-            const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(textToTranslate)}&target=am`);
-            bot.sendMessage(chatId, `Translated: ${response.data.translatedText}`);
-        } catch (error) {
-            console.error('Translation error:', error);
-            bot.sendMessage(chatId, "Error while translating the text.");
+    // Handle translation and grammar fix as before
+    if (query.message.reply_to_message) {
+        const userMessageId = query.message.reply_to_message.message_id;  // Get the replied message ID
+
+        if (query.data.startsWith('translate:')) {
+            try {
+                // Get the original message that the user replied to
+                const message = query.message.reply_to_message;
+
+                const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(message.text)}&target=am`);
+                const translatedText = decodeURIComponent(response.data.translatedText);
+
+                await bot.sendMessage(
+                    chatId, 
+                    `<code>${translatedText}</code>\n\n💰 Daily Credits Left: ${10 - await db.getMessageCount(chatId)}`,
+                    {
+                        parse_mode: 'HTML',
+                        reply_markup: {
+                            inline_keyboard: [
+                                [{ text: 'Delete', callback_data: `delete:${query.message.message_id}` }]
+                            ]
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error('Translation error:', error);
+                bot.sendMessage(chatId, "Error while translating the text.");
+            }
         }
+
+        if (query.data.startsWith('grammar_fix:')) {
+            try {
+                // Get the original message that the user replied to
+                const message = query.message.reply_to_message;
+
+                const correctedText = await correctGrammar(message.text);
+
+                await bot.sendMessage(
+                    chatId, 
+                    `<code>${correctedText}</code>\n\n💰 Daily Credits Left: ${10 - await db.getMessageCount(chatId)}`,
+                    {
+                        parse_mode: 'HTML',
+                        reply_markup: {
+                            inline_keyboard: [
+                                [{ text: 'Delete', callback_data: `delete:${query.message.message_id}` }]
+                            ]
+                        }
+                    }
+                );
+            } catch (error) {
+                console.error('Grammar correction error:', error);
+                bot.sendMessage(chatId, "Error while correcting grammar.");
+            }
+        }
+    } else {
+        // bot.sendMessage(chatId, "No message was replied to. Please reply to a message to perform this action.");
     }
 });
+
+
+
+
 
 console.log("LisanBot is running!");

@@ -13,7 +13,6 @@ bot.onText(/\/start/, async (msg) => {
     bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to HoranAI!\nSend me any text or image`, {
         reply_markup: {
             inline_keyboard: [
-               
                 [{ text: 'Settings', callback_data: 'settings' }]
             ]
         }
@@ -65,7 +64,6 @@ bot.on('message', async (msg) => {
     }
 });
 
-
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
 
@@ -87,9 +85,14 @@ bot.on('callback_query', async (query) => {
         }
     }
 
-    // Handle translation and grammar fix as before
     if (query.message.reply_to_message) {
         const userMessageId = query.message.reply_to_message.message_id;  // Get the replied message ID
+
+        // Increment the message count when Translate or Grammar Fix buttons are clicked
+        const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+        if (!canSend) {
+            return bot.sendMessage(chatId, "You've reached your daily message limit (10 messages). Upgrade to premium for unlimited usage.");
+        }
 
         if (query.data.startsWith('translate:')) {
             try {
@@ -101,7 +104,7 @@ bot.on('callback_query', async (query) => {
 
                 await bot.sendMessage(
                     chatId, 
-                    `<code>${translatedText}</code>\n\n💰 Daily Credits Left: ${10 - await db.getMessageCount(chatId)}`,
+                    `<code>${translatedText}</code>\n\n💰 Daily Credits Left: ${10 - totalMessages}`,
                     {
                         parse_mode: 'HTML',
                         reply_markup: {
@@ -126,7 +129,7 @@ bot.on('callback_query', async (query) => {
 
                 await bot.sendMessage(
                     chatId, 
-                    `<code>${correctedText}</code>\n\n💰 Daily Credits Left: ${10 - await db.getMessageCount(chatId)}`,
+                    `<code>${correctedText}</code>\n\n💰 Daily Credits Left: ${10 - totalMessages}`,
                     {
                         parse_mode: 'HTML',
                         reply_markup: {
@@ -142,12 +145,8 @@ bot.on('callback_query', async (query) => {
             }
         }
     } else {
-        // bot.sendMessage(chatId, "No message was replied to. Please reply to a message to perform this action.");
+        bot.sendMessage(chatId, "No message was replied to. Please reply to a message to perform this action.");
     }
 });
-
-
-
-
 
 console.log("LisanBot is running!");

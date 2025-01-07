@@ -22,7 +22,7 @@ bot.onText(/\/start/, async (msg) => {
 });
 
 // Inline Query for Translation
-bot.on('inline_query', (query) => handleInlineTranslation(bot, query));
+bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 
 // Future Inline Query for Grammar Fix (commented out for now)

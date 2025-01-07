@@ -55,7 +55,7 @@ bot.on('message', async (msg) => {
                 parse_mode: 'HTML',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: 'Translate', callback_data: 'translate' }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
+                        [{ text: 'Translate', callback_data: `translate:${msg.text}` }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
                         [{ text: 'Delete', callback_data: `delete:${userMessageId}` }] 
                     ]
                 }
@@ -67,21 +67,29 @@ bot.on('message', async (msg) => {
     }
 });
 
-
-
-
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
+
     if (query.data.startsWith('delete')) {
         try {
             const [, userMessageId] = query.data.split(':');
-            await bot.deleteMessage(chatId, query.message.message_id); // Delete bot's message
-            await bot.deleteMessage(chatId, userMessageId); // Delete user's message
+            await bot.deleteMessage(chatId, query.message.message_id); 
+            await bot.deleteMessage(chatId, userMessageId); 
         } catch (error) {
             console.error('Error deleting messages:', error);
         }
     }
-});
 
+    if (query.data.startsWith('translate')) {
+        try {
+            const [, textToTranslate] = query.data.split(':');
+            const response = await axios.get(`${process.env.TRANSLATE_API_URL}?data=${encodeURIComponent(textToTranslate)}&to=am`);
+            bot.sendMessage(chatId, `Translated: ${response.data}`);
+        } catch (error) {
+            console.error('Translation error:', error);
+            bot.sendMessage(chatId, "Error while translating the text.");
+        }
+    }
+});
 
 console.log("LisanBot is running!");

@@ -65,7 +65,7 @@ bot.on('callback_query', async (query) => {
     const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
     if (!canSend) {
         return bot.sendMessage(chatId, 
-            "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 **Daily Credits Left**: 0");
+            "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <strong>Daily Credits Left</strong>: 0");
     }
 
     if (query.data.startsWith('delete:')) {

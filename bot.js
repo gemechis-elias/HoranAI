@@ -24,7 +24,7 @@ bot.onText(/\/start/, async (msg) => {
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
     if (query.data === 'help') {
-        bot.sendMessage(chatId, "You can send a message to fix its grammar or translate it!");
+        bot.sendMessage(chatId, "You can send a message to fix its grammar or translate it! Thank you");
     } else if (query.data === 'settings') {
         const userInfo = await getUserInfo(chatId);
         bot.sendPhoto(chatId, userInfo.profilePicUrl, {
@@ -55,7 +55,7 @@ bot.on('message', async (msg) => {
                 parse_mode: 'HTML',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: 'Translate', callback_data: `translate:${msg.text}` }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
+                        [{ text: 'Translate', callback_data: `translate:${encodeURIComponent(msg.text)}` }, { text: 'Grammar Fix', callback_data: 'grammar_fix' }],
                         [{ text: 'Delete', callback_data: `delete:${userMessageId}` }] 
                     ]
                 }
@@ -83,8 +83,8 @@ bot.on('callback_query', async (query) => {
     if (query.data.startsWith('translate')) {
         try {
             const [, textToTranslate] = query.data.split(':');
-            const response = await axios.get(`${process.env.TRANSLATE_API_URL}?data=${encodeURIComponent(textToTranslate)}&to=am`);
-            bot.sendMessage(chatId, `Translated: ${response.data}`);
+            const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(textToTranslate)}&target=am`);
+            bot.sendMessage(chatId, `Translated: ${response.data.translatedText}`);
         } catch (error) {
             console.error('Translation error:', error);
             bot.sendMessage(chatId, "Error while translating the text.");

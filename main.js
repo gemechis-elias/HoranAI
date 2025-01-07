@@ -3,8 +3,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const { correctGrammar, getUserInfo } = require('./helpers');
 const db = require('./database');
+const { handleInlineTranslation } = require('./inline_query');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+
 
 // Greet new users
 bot.onText(/\/start/, async (msg) => {
@@ -18,6 +20,13 @@ bot.onText(/\/start/, async (msg) => {
         }
     });
 });
+
+// Inline Query for Translation
+bot.on('inline_query', handleInlineTranslation);
+
+// Future Inline Query for Grammar Fix (commented out for now)
+// bot.on('inline_query', handleInlineGrammarFix);
+
 
 // Help Button
 bot.on('callback_query', async (query) => {

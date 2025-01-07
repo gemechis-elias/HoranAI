@@ -8,8 +8,8 @@ async function handleInlineTranslation(query) {
     if (!userText) return;
 
     try {
-        const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(userText)}&target=am`);
-        const translatedText = decodeURIComponent(response.data.translatedText);
+        // const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(userText)}&target=am`);
+        // const translatedText = decodeURIComponent(response.data.translatedText);
 
         query.bot.answerInlineQuery(query.id, [
             {
@@ -17,7 +17,8 @@ async function handleInlineTranslation(query) {
                 id: '1',
                 title: 'Translate to Amharic',
                 input_message_content: {
-                    message_text: `${translatedText}`
+                    // message_text: `${translatedText}`
+                      message_text: "test"
                 }
             }
         ]);

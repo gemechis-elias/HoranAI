@@ -103,11 +103,12 @@ bot.on('callback_query', async (query) => {
             const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
             if (!canSend) {
                 return bot.sendMessage(chatId, 
-                    "ðŸš¨ Oops! You've reached your daily message limit (10 messages). ðŸ˜”\n\nBut don't worry! You can continue using the bot by buying more credits! ðŸ’³âœ¨\n\nðŸ‘‰ Click below to check out your subscription options and get more credits to keep chatting!\n\nðŸ›’ /subscription\n\nðŸ’° <b>Daily Credits Left</b>: 0",
+                    "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
                     {
                         parse_mode: 'HTML'
                     }
                 );
+                
                 
             }
 
@@ -141,11 +142,12 @@ bot.on('callback_query', async (query) => {
             const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
             if (!canSend) {
                 return bot.sendMessage(chatId, 
-                    "ðŸš¨ Oops! You've reached your daily message limit (10 messages). ðŸ˜”\n\nBut don't worry! You can continue using the bot by buying more credits! ðŸ’³âœ¨\n\nðŸ‘‰ Click below to check out your subscription options and get more credits to keep chatting!\n\nðŸ›’ /subscription\n\nðŸ’° <b>Daily Credits Left</b>: 0",
+                    "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
                     {
                         parse_mode: 'HTML'
                     }
                 );
+                
                 
             }
 

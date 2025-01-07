@@ -61,17 +61,7 @@ bot.on('message', async (msg) => {
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
 
-    // Increment message count for both translation and grammar fix buttons
-    const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-    if (!canSend) {
-        return bot.sendMessage(chatId, 
-            "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
-            {
-                parse_mode: 'HTML'
-            }
-        );
-        
-    }
+
 
     if (query.data.startsWith('delete:')) {
         try {
@@ -82,6 +72,19 @@ bot.on('callback_query', async (query) => {
             if (userMessageId) {
                 await bot.deleteMessage(chatId, userMessageId);
             }
+
+             // Increment message count for both translation and grammar fix buttons
+            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+            if (!canSend) {
+                return bot.sendMessage(chatId, 
+                    "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
+                    {
+                        parse_mode: 'HTML'
+                    }
+                );
+                
+            }
+
         } catch (error) {
             console.error('Error deleting messages:', error);
         }
@@ -109,6 +112,18 @@ bot.on('callback_query', async (query) => {
                         }
                     }
                 );
+
+            // Increment message count for both translation and grammar fix buttons
+            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+            if (!canSend) {
+                return bot.sendMessage(chatId, 
+                    "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
+                    {
+                        parse_mode: 'HTML'
+                    }
+                );
+                
+            }
             } catch (error) {
                 console.error('Translation error:', error);
                 bot.sendMessage(chatId, "Error while translating the text.");

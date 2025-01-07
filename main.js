@@ -22,7 +22,8 @@ bot.onText(/\/start/, async (msg) => {
 });
 
 // Inline Query for Translation
-bot.on('inline_query', handleInlineTranslation);
+bot.on('inline_query', (query) => handleInlineTranslation(bot, query));
+
 
 // Future Inline Query for Grammar Fix (commented out for now)
 // bot.on('inline_query', handleInlineGrammarFix);
@@ -114,7 +115,7 @@ bot.on('callback_query', async (query) => {
 
                 await bot.sendMessage(
                     chatId, 
-                    `<code>${translatedText}</code>\n\nðŸ’° Daily Credits Left: ${10 - totalMessages}`,
+                    `<code>${translatedText}</code>\n\n💰 Daily Credits Left: ${10 - totalMessages}`,
                     {
                         parse_mode: 'HTML',
                         reply_markup: {
@@ -153,7 +154,7 @@ bot.on('callback_query', async (query) => {
 
                 await bot.sendMessage(
                     chatId, 
-                    `<code>${correctedText}</code>\n\nðŸ’° Daily Credits Left: ${10 - totalMessages}`,
+                    `<code>${correctedText}</code>\n\n💰 Daily Credits Left: ${10 - totalMessages}`,
                     {
                         parse_mode: 'HTML',
                         reply_markup: {

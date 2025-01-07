@@ -145,7 +145,7 @@ bot.on('callback_query', async (query) => {
             }
         }
     } else {
-        bot.sendMessage(chatId, "No message was replied to. Please reply to a message to perform this action.");
+        // bot.sendMessage(chatId, "No message was replied to. Please reply to a message to perform this action.");
     }
 });
 

@@ -82,17 +82,7 @@ bot.on('callback_query', async (query) => {
                 await bot.deleteMessage(chatId, userMessageId);
             }
 
-             // Increment message count for both translation and grammar fix buttons
-            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-            if (!canSend) {
-                return bot.sendMessage(chatId, 
-                    "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
-                    {
-                        parse_mode: 'HTML'
-                    }
-                );
-                
-            }
+          
 
         } catch (error) {
             console.error('Error deleting messages:', error);
@@ -109,9 +99,21 @@ bot.on('callback_query', async (query) => {
                 const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(message.text)}&target=am`);
                 const translatedText = decodeURIComponent(response.data.translatedText);
 
+                // Increment message count for both translation and grammar fix buttons
+            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+            if (!canSend) {
+                return bot.sendMessage(chatId, 
+                    "ðŸš¨ Oops! You've reached your daily message limit (10 messages). ðŸ˜”\n\nBut don't worry! You can continue using the bot by buying more credits! ðŸ’³âœ¨\n\nðŸ‘‰ Click below to check out your subscription options and get more credits to keep chatting!\n\nðŸ›’ /subscription\n\nðŸ’° <b>Daily Credits Left</b>: 0",
+                    {
+                        parse_mode: 'HTML'
+                    }
+                );
+                
+            }
+
                 await bot.sendMessage(
                     chatId, 
-                    `<code>${translatedText}</code>\n\n💰 Daily Credits Left: ${10 - totalMessages}`,
+                    `<code>${translatedText}</code>\n\nðŸ’° Daily Credits Left: ${10 - totalMessages}`,
                     {
                         parse_mode: 'HTML',
                         reply_markup: {
@@ -122,17 +124,7 @@ bot.on('callback_query', async (query) => {
                     }
                 );
 
-            // Increment message count for both translation and grammar fix buttons
-            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-            if (!canSend) {
-                return bot.sendMessage(chatId, 
-                    "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
-                    {
-                        parse_mode: 'HTML'
-                    }
-                );
-                
-            }
+            
             } catch (error) {
                 console.error('Translation error:', error);
                 bot.sendMessage(chatId, "Error while translating the text.");
@@ -145,9 +137,21 @@ bot.on('callback_query', async (query) => {
 
                 const correctedText = await correctGrammar(message.text);
 
+                // Increment message count for both translation and grammar fix buttons
+            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+            if (!canSend) {
+                return bot.sendMessage(chatId, 
+                    "ðŸš¨ Oops! You've reached your daily message limit (10 messages). ðŸ˜”\n\nBut don't worry! You can continue using the bot by buying more credits! ðŸ’³âœ¨\n\nðŸ‘‰ Click below to check out your subscription options and get more credits to keep chatting!\n\nðŸ›’ /subscription\n\nðŸ’° <b>Daily Credits Left</b>: 0",
+                    {
+                        parse_mode: 'HTML'
+                    }
+                );
+                
+            }
+
                 await bot.sendMessage(
                     chatId, 
-                    `<code>${correctedText}</code>\n\n💰 Daily Credits Left: ${10 - totalMessages}`,
+                    `<code>${correctedText}</code>\n\nðŸ’° Daily Credits Left: ${10 - totalMessages}`,
                     {
                         parse_mode: 'HTML',
                         reply_markup: {

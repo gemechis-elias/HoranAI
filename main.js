@@ -10,7 +10,7 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username);
-    bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to HoranAI!\nSend me any text or image`, {
+    bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to Horan AI!\nSend me any text or image`, {
         reply_markup: {
             inline_keyboard: [
                 [{ text: 'Settings', callback_data: 'settings' }]
@@ -38,7 +38,6 @@ bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
 
     const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-    const messagesLeft = 10 - totalMessages;
 
     if (!canSend) {
         return bot.sendMessage(chatId, "You've reached your daily message limit (10 messages). Upgrade to premium for unlimited usage.");
@@ -64,18 +63,21 @@ bot.on('message', async (msg) => {
     }
 });
 
+// Handle button clicks for translation and grammar fix
 bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
 
+    // Increment message count for both translation and grammar fix buttons
+    const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+    if (!canSend) {
+        return bot.sendMessage(chatId, "You've reached your daily message limit (10 messages). Upgrade to premium for unlimited usage.");
+    }
+
     if (query.data.startsWith('delete:')) {
         try {
-            // Get the message ID of the message to delete (the one that contains the inline buttons)
             const messageIdToDelete = query.message.message_id;
-
-            // Delete the message that contains the inline buttons
             await bot.deleteMessage(chatId, messageIdToDelete);
-            
-            // Optionally, you can also delete the original message that the user replied to
+
             const userMessageId = query.message.reply_to_message ? query.message.reply_to_message.message_id : null;
             if (userMessageId) {
                 await bot.deleteMessage(chatId, userMessageId);
@@ -86,17 +88,10 @@ bot.on('callback_query', async (query) => {
     }
 
     if (query.message.reply_to_message) {
-        const userMessageId = query.message.reply_to_message.message_id;  // Get the replied message ID
-
-        // Increment the message count when Translate or Grammar Fix buttons are clicked
-        const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-        if (!canSend) {
-            return bot.sendMessage(chatId, "You've reached your daily message limit (10 messages). Upgrade to premium for unlimited usage.");
-        }
+        const userMessageId = query.message.reply_to_message.message_id;
 
         if (query.data.startsWith('translate:')) {
             try {
-                // Get the original message that the user replied to
                 const message = query.message.reply_to_message;
 
                 const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(message.text)}&target=am`);
@@ -122,7 +117,6 @@ bot.on('callback_query', async (query) => {
 
         if (query.data.startsWith('grammar_fix:')) {
             try {
-                // Get the original message that the user replied to
                 const message = query.message.reply_to_message;
 
                 const correctedText = await correctGrammar(message.text);
@@ -144,9 +138,8 @@ bot.on('callback_query', async (query) => {
                 bot.sendMessage(chatId, "Error while correcting grammar.");
             }
         }
-    } else {
-        // bot.sendMessage(chatId, "No message was replied to. Please reply to a message to perform this action.");
     }
 });
+
 
 console.log("LisanBot is running!");

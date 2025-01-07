@@ -23,6 +23,7 @@ async function saveUser(chatId, username) {
 }
 
 // Increment message count
+// Increment message count
 async function incrementMessageCount(chatId) {
     const { data } = await supabase
         .from('users')
@@ -34,12 +35,15 @@ async function incrementMessageCount(chatId) {
     if (!data) return { canSend: false, totalMessages: 0 };
 
     if (data.last_message_date !== today) {
-        await supabase.from('users').update({ total_messages: 1, last_message_date: new Date() }).eq('user_id', chatId);
+        // New day, reset the message count
+        await supabase.from('users').update({ total_messages: 1, last_message_date: today }).eq('user_id', chatId);
         return { canSend: true, totalMessages: 1 };
     } else if (data.total_messages < 10) {
+        // Increment message count if it's below the limit
         await supabase.from('users').update({ total_messages: data.total_messages + 1 }).eq('user_id', chatId);
         return { canSend: true, totalMessages: data.total_messages + 1 };
     } else {
+        // Limit reached
         return { canSend: false, totalMessages: 10 };
     }
 }

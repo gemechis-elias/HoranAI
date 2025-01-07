@@ -37,12 +37,6 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     if (!msg.text || msg.text.startsWith('/')) return;
 
-    const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-
-    if (!canSend) {
-        return bot.sendMessage(chatId, "You've reached your daily message limit (10 messages). Upgrade to premium for unlimited usage.");
-    }
-
     try {
         const correctedText = await correctGrammar(msg.text);
         await bot.sendMessage(
@@ -140,6 +134,7 @@ bot.on('callback_query', async (query) => {
         }
     }
 });
+
 
 
 console.log("LisanBot is running!");

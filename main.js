@@ -29,23 +29,6 @@ bot.onText(/\/start/, async (msg) => {
 bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 
-// Future Inline Query for Grammar Fix (commented out for now)
-// bot.on('inline_query', handleInlineGrammarFix);
-
-
-// Help Button
-bot.on('callback_query', async (query) => {
-    const chatId = query.message.chat.id;
-    if (query.data === 'help') {
-        bot.sendMessage(chatId, "You can send a message to fix its grammar or translate it!");
-    } else if (query.data === 'settings') {
-        const userInfo = await getUserInfo(chatId);
-        bot.sendPhoto(chatId, userInfo.profilePicUrl, {
-            caption: `User ID: ${chatId}\nUsername: ${userInfo.username}`
-        });
-    }
-});
-
 // Grammar and Translation
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;

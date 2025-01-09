@@ -2,7 +2,6 @@ require('dotenv').config();
 const axios = require('axios');
 const { correctGrammar } = require('./helpers');
 
-// Inline Translation Handler
 async function handleInlineContent(bot, query) {
     const userText = query.query;
     if (!userText) return;

@@ -45,6 +45,7 @@ Create a `.env` file in the root directory with the following keys:
 ```plaintext
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=your-openai-model
 TRANSLATE_API_URL=your-translation-api-url
 SUPABASE_URL=your-supabase-url
 SUPABASE_KEY=your-supabase-key

@@ -30,7 +30,7 @@ async function incrementMessageCount(chatId) {
         .eq('user_id', chatId)
         .single();
 
-    const today = new Date().toISOString().split('T')[0];  // Get today's date in yyyy-mm-dd format.
+    const today = new Date().toISOString().split('T')[0];  
 
     if (!data) {
         // If no data is found, return default (user doesn't exist yet).

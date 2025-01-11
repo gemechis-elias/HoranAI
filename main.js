@@ -4,6 +4,7 @@ const axios = require('axios');
 const { correctGrammar, getUserInfo } = require('./helpers');
 const db = require('./database');
 const { handleInlineContent } = require('./inline_query');
+const { handleYoutubeDownload } = require('./youtubeDownloader');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
@@ -29,17 +30,40 @@ bot.onText(/\/start/, async (msg) => {
 bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 
-// Grammar and Translation
+
+// Check for YouTube video links and handle MP3 download
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username);
+
     if (!msg.text || msg.text.startsWith('/')) return;
 
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/;
+    const match = msg.text.match(youtubeRegex);
+
+    if (match) {
+        try {
+            await bot.sendMessage(chatId, "Processing your YouTube video for MP3 download...");
+
+            // Call the handleYoutubeDownload function
+            const mp3Path = await handleYoutubeDownload(match[0]);
+
+            await bot.sendMessage(chatId, "Here is your MP3 file:");
+            await bot.sendDocument(chatId, mp3Path);
+
+        } catch (error) {
+            console.error('Error handling YouTube download:', error);
+            bot.sendMessage(chatId, "An error occurred while processing the YouTube video.");
+        }
+        return;
+    }
+
+    // Existing grammar and translation functionality
     try {
         const correctedText = await correctGrammar(msg.text);
         await bot.sendMessage(
-            chatId, 
-            `What do you want to do with this message?`, 
+            chatId,
+            `What do you want to do with this message?`,
             {
                 reply_to_message_id: msg.message_id,
                 reply_markup: {
@@ -54,6 +78,7 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, "An error occurred while processing your message.");
     }
 });
+
 
 // Handle button clicks for translation and grammar fix
 bot.on('callback_query', async (query) => {

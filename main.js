@@ -32,6 +32,7 @@ bot.on('inline_query', (query) => handleInlineContent(bot, query));
 // Grammar and Translation
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
+    await db.saveUser(chatId, msg.chat.username);
     if (!msg.text || msg.text.startsWith('/')) return;
 
     try {

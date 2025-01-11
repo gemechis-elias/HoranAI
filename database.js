@@ -5,21 +5,40 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Save user without last_message column
 async function saveUser(chatId, username) {
-    const { data, error } = await supabase
-        .from('users')
-        .select('user_id')
-        .eq('user_id', chatId)
-        .single();
+    try {
+        const { data, error: selectError } = await supabase
+            .from('users')
+            .select('user_id')
+            .eq('user_id', chatId)
+            .single();
 
-    if (data) return;
+        if (selectError && selectError.code !== 'PGRST116') { // Allow "No Rows Found" error
+            console.error('Error fetching user:', selectError.message);
+            return;
+        }
 
-    await supabase.from('users').insert([{
-        user_id: chatId,
-        username: username,
-        start_date: new Date(),
-        total_messages: 0,
-        last_message_date: ''  // This field tracks the last message date for rate limiting
-    }]);
+        if (data) {
+            console.log('User already exists:', data.user_id);
+            return;
+        }
+
+        const { error: insertError } = await supabase.from('users').insert([{
+            user_id: chatId,
+            username: username,
+            start_date: new Date(),
+            total_messages: 0,
+            // last message as yesterday to allow for first message
+            last_message_date: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]
+        }]);
+
+        if (insertError) {
+            console.error('Error inserting user:', insertError.message);
+        } else {
+            // console.log('User successfully saved:', chatId);
+        }
+    } catch (error) {
+        console.error('Unexpected error while saving user:', error.message);
+    }
 }
 
 // Increment message count

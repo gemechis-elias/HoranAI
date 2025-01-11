@@ -30,7 +30,6 @@ bot.onText(/\/start/, async (msg) => {
 bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 
-
 // Check for YouTube video links and handle MP3 download
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;

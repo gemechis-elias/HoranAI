@@ -1,30 +1,37 @@
-const ytdl = require('ytdl-core');
-const fs = require('fs');
+const youtubeDlExec = require('youtube-dl-exec');
 const path = require('path');
+const fs = require('fs');
 
 const handleYoutubeDownload = async (url) => {
     try {
-        const videoId = ytdl.getURLVideoID(url);
-        const info = await ytdl.getInfo(videoId);
-        const title = info.videoDetails.title.replace(/[<>:"\/\\|?*]/g, ""); // Remove invalid filename characters
-
-        const outputPath = path.resolve(__dirname, 'downloads', `${title}.mp3`);
-
         // Ensure the downloads folder exists
-        if (!fs.existsSync(path.resolve(__dirname, 'downloads'))) {
-            fs.mkdirSync(path.resolve(__dirname, 'downloads'));
+        const downloadsDir = path.resolve(__dirname, 'downloads');
+        if (!fs.existsSync(downloadsDir)) {
+            fs.mkdirSync(downloadsDir);
         }
 
-        const audioStream = ytdl(videoId, { filter: 'audioonly' });
-        const writeStream = fs.createWriteStream(outputPath);
+        // Generate a unique file name with timestamp
+        const timestamp = Date.now();
+        const outputPath = path.join(downloadsDir, `%(title)s-${timestamp}.%(ext)s`);
 
-        audioStream.pipe(writeStream);
-
-        return new Promise((resolve, reject) => {
-            writeStream.on('finish', () => resolve(outputPath));
-            writeStream.on('error', (error) => reject(error));
+        // Run youtube-dl to download the MP3
+        await youtubeDlExec(url, {
+            output: outputPath,
+            extractAudio: true,
+            audioFormat: 'mp3',
         });
+
+        // Find the downloaded MP3 file
+        const files = fs.readdirSync(downloadsDir);
+        const downloadedFile = files.find((file) => file.includes(timestamp) && file.endsWith('.mp3'));
+
+        if (!downloadedFile) {
+            throw new Error('Failed to find the downloaded MP3 file.');
+        }
+
+        return path.join(downloadsDir, downloadedFile);
     } catch (error) {
+        console.error('Error during YouTube download:', error);
         throw new Error('Failed to download the YouTube video.');
     }
 };

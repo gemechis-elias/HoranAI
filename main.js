@@ -5,6 +5,7 @@ const { correctGrammar, getUserInfo } = require('./helpers');
 const db = require('./database');
 const { handleInlineContent } = require('./inline_query');
 const { handleYoutubeDownload } = require('./youtubeDownloader');
+const fs = require('fs');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
@@ -30,6 +31,7 @@ bot.onText(/\/start/, async (msg) => {
 bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 
+
 // Check for YouTube video links and handle MP3 download
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -47,8 +49,17 @@ bot.on('message', async (msg) => {
             // Call the handleYoutubeDownload function
             const mp3Path = await handleYoutubeDownload(match[0]);
 
-            await bot.sendMessage(chatId, "Here is your MP3 file:");
+            // Send the MP3 file to the user
             await bot.sendDocument(chatId, mp3Path);
+            await bot.sendMessage(chatId, "Here is your MP3 file:");
+
+            // Delete the file after successfully sending it
+            try {
+                fs.unlinkSync(mp3Path);
+                console.log(`Deleted file: ${mp3Path}`);
+            } catch (deleteError) {
+                console.error(`Error deleting file: ${mp3Path}`, deleteError);
+            }
 
         } catch (error) {
             console.error('Error handling YouTube download:', error);
@@ -77,6 +88,8 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, "An error occurred while processing your message.");
     }
 });
+
+
 
 
 // Handle button clicks for translation and grammar fix

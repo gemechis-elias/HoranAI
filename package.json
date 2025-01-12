@@ -13,8 +13,9 @@
     "@supabase/supabase-js": "^2.47.10",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
+    "fs": "^0.0.1-security",
     "node-telegram-bot-api": "^0.66.0",
     "openai": "^4.77.0",
-    "ytdl-core": "^4.11.5"
+    "youtube-dl-exec": "^3.0.12"
   }
 }

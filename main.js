@@ -32,7 +32,7 @@ bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 
 
-// Check for YouTube video links and handle MP3 download
+// Check for YouTube video links and handle MP3 download first
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username);

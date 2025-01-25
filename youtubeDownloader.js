@@ -1,6 +1,7 @@
-const youtubeDlExec = require('youtube-dl-exec');
-const path = require('path');
+require('dotenv').config();
+const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
 
 const handleYoutubeDownload = async (url) => {
     try {
@@ -10,26 +11,28 @@ const handleYoutubeDownload = async (url) => {
             fs.mkdirSync(downloadsDir);
         }
 
-        // Generate a unique file name with timestamp
+        // Send the request to the Python API
+        const response = await axios.post(
+            process.env.YOUTUBE_DOWNLOADER_API_URL,
+            { url }, // Send the URL as JSON payload
+            { responseType: 'stream' } // Stream the MP3 response
+        );
+
+        // Generate a unique file name for the MP3
         const timestamp = Date.now();
-        const outputPath = path.join(downloadsDir, `%(title)s-${timestamp}.%(ext)s`);
+        const mp3Path = path.join(downloadsDir, `youtube-${timestamp}.mp3`);
 
-        // Run youtube-dl to download the MP3
-        await youtubeDlExec(url, {
-            output: outputPath,
-            extractAudio: true,
-            audioFormat: 'mp3',
+        // Save the streamed MP3 to a file
+        const writer = fs.createWriteStream(mp3Path);
+        response.data.pipe(writer);
+
+        return new Promise((resolve, reject) => {
+            writer.on('finish', () => resolve(mp3Path));
+            writer.on('error', (error) => {
+                console.error('Error writing MP3 file:', error);
+                reject(new Error('Failed to save the downloaded MP3.'));
+            });
         });
-
-        // Find the downloaded MP3 file
-        const files = fs.readdirSync(downloadsDir);
-        const downloadedFile = files.find((file) => file.includes(timestamp) && file.endsWith('.mp3'));
-
-        if (!downloadedFile) {
-            throw new Error('Failed to find the downloaded MP3 file.');
-        }
-
-        return path.join(downloadsDir, downloadedFile);
     } catch (error) {
         console.error('Error during YouTube download:', error);
         throw new Error('Failed to download the YouTube video.');

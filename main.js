@@ -38,6 +38,25 @@ bot.onText(/\/start/, async (msg) => {
     
 });
 
+// if message is '/settings' call back user settings
+bot.onText(/\/settings/, async (msg) => {
+    const chatId = msg.chat.id;
+    await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
+    bot.sendMessage(
+        chatId,
+        `⚙️ Tap *Settings* below to customize your experience.`,
+        {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '⚙️ Settings', callback_data: 'settings' }]
+                ]
+            }
+        }
+    );
+
+});
+
 // Inline Query for Translation
 bot.on('inline_query', (query) => handleInlineContent(bot, query));
 

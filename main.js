@@ -11,6 +11,41 @@ const { extractTextFromImage } = require('./image_handler.js');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
+async function isUserMemberOrSubscribed(chatId) {
+    try {
+        // Check if the user is a member of the channel
+        const channelUsername = "@horansoftware"; 
+        const memberStatus = await bot.getChatMember(channelUsername, chatId);
+        
+
+        if (
+            memberStatus.status === "member" ||
+            memberStatus.status === "administrator" ||
+            memberStatus.status === "creator"
+        ) {
+            return true; // User is a member
+        }
+
+        // Check if the user is a premium subscriber
+        const { data, error } = await supabase
+            .from("users")
+            .select("is_premium")
+            .eq("user_id", chatId)
+            .single();
+
+        if (error) {
+            console.error("Error fetching user subscription status:", error.message);
+            return false; // Assume not subscribed on error
+        }
+
+        return data?.is_premium || false; // Return true if the user is premium, false otherwise
+    } catch (error) {
+        console.error("Error checking membership or subscription:", error.message);
+        return false; // Default to not a member or subscribed
+    }
+}
+
+
 bot.on('polling_error', (error) => {
     console.error('Polling error:', error);
 });
@@ -75,7 +110,7 @@ bot.on('message', async (msg) => {
     await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
 
     // Check if the user is a member of the channel or a premium subscriber
-    const isMemberOrSubscribed = await db.isUserMemberOrSubscribed(chatId);
+    const isMemberOrSubscribed = await isUserMemberOrSubscribed(chatId);
        // Increment the message count and check if the user can continue
     const { canSend } = await db.checkMessageCount(chatId);
     if (!isMemberOrSubscribed && !canSend) {
@@ -335,7 +370,7 @@ bot.on('callback_query', async (query) => {
                 const translatedText = decodeURIComponent(response.data.translatedText);
 
                // Check if the user is a member of the channel or a premium subscriber
-                    const isMemberOrSubscribed = await db.isUserMemberOrSubscribed(chatId);
+                    const isMemberOrSubscribed = await isUserMemberOrSubscribed(chatId);
                     // Increment the message count and check if the user can continue
                     const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
                 if (!isMemberOrSubscribed && !canSend) {
@@ -377,7 +412,7 @@ bot.on('callback_query', async (query) => {
                 const correctedText = await correctGrammar(message.text);
 
                // Check if the user is a member of the channel or a premium subscriber
-               const isMemberOrSubscribed = await db.isUserMemberOrSubscribed(chatId);
+               const isMemberOrSubscribed = await isUserMemberOrSubscribed(chatId);
                // Increment the message count and check if the user can continue
                const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
            if (!isMemberOrSubscribed && !canSend) {
@@ -517,6 +552,8 @@ bot.on('callback_query', async (query) => {
  
 
 });
+
+
 
 
 

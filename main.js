@@ -115,7 +115,7 @@ bot.on('message', async (msg) => {
     }
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/;
     const match = msg.text.match(youtubeRegex);
-    
+
     if (match) {
         try {
             // Send an initial message and get its message ID
@@ -134,13 +134,17 @@ bot.on('message', async (msg) => {
                 // Stop the progress when it reaches 100%
                 if (progress >= 100) {
                     clearInterval(progressInterval);
+                    await bot.editMessageText("Converting format please wait...", {
+                        chat_id: chatId,
+                        message_id: processingMessage.message_id
+                    });
                 }
             }, 1000); // Update every second
     
             // Call the handleYoutubeDownload function
             const mp3Path = await handleYoutubeDownload(match[0]);
     
-            // Stop the progress simulation and update the message
+            // Stop the progress simulation and delete the "Converting format..." message
             clearInterval(progressInterval);
             await bot.editMessageText("✅ Download complete. Sending MP3 file...", {
                 chat_id: chatId,
@@ -149,7 +153,7 @@ bot.on('message', async (msg) => {
     
             // Send the MP3 file to the user
             await bot.sendDocument(chatId, mp3Path);
-            await bot.sendMessage(chatId, "🎵 Here is your MP3 file:");
+            // await bot.sendMessage(chatId, "🎵 Here is your MP3 file:");
     
             // Delete the file after successfully sending it
             try {
@@ -164,6 +168,7 @@ bot.on('message', async (msg) => {
         }
         return;
     }
+    
     
 
    

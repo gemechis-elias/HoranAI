@@ -13,6 +13,8 @@ HoranAI is a Node.js-powered Telegram bot designed for grammar correction and tr
 - **Translation:** Translate messages.
 - **Inline Message Support:** Perform corrections and translations directly in any chat using inline mode.
 - **User Interaction:** Greet users on first start with a welcome message.
+- **Youtube Video Download:** Download Youtube videos by sending the video link.
+- **OCR:** Extract text from images using Optical Character Recognition.
 - **Inline Buttons:**
   - `Translate`: Translates the corrected message.
   - `Grammar Fix`: Fixes grammatical errors again.
@@ -48,7 +50,9 @@ OPENAI_API_KEY=your-openai-api-key
 OPENAI_MODEL=your-openai-model
 TRANSLATE_API_URL=your-translation-api-url
 SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-key
+SUPABASE_KEY=your-supabase-
+YOUTUBE_DOWNLOADER_API_URL=your-youtube-downloader-api-url
+OCR_API_KEY=your-ocr-api-key
 ```
 
 ### Running the Bot

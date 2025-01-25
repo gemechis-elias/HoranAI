@@ -239,7 +239,7 @@ bot.on('message', async (msg) => {
             }, 1000);
     
             // Call the handleYoutubeDownload function
-            const { videoTitle, mp3Path, thumbnail } = await handleYoutubeDownload(match[0]);
+            const { videoTitle, mp3Path, thumbnail } = await handleYoutubeDownload(youtube_match[0]);
     
             clearInterval(progressInterval);
             await bot.editMessageText("✅ Download complete. Sending MP3 file...", {

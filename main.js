@@ -19,13 +19,23 @@ bot.on('polling_error', (error) => {
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
-    bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to Horan AI.\nSend me any text or image`, {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: 'Settings', callback_data: 'settings' }]
-            ]
+    bot.sendMessage(
+        chatId,
+        `👋 Hello, *${msg.chat.first_name}*! Welcome to *Horan AI*! 🚀\n\nHere’s what I can do for you:\n\n` +
+        `📜 *Text*: Send me any text to fix grammar or translate it.\n` +
+        `🔗 *Link*: Share a YouTube link to download it as MP3.\n` +
+        `🖼️ *Image*: Upload an image, and I’ll extract text from it using OCR.\n\n` +
+        `⚙️ Tap *Settings* below to customize your experience.`,
+        {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '⚙️ Settings', callback_data: 'settings' }]
+                ]
+            }
         }
-    });
+    );
+    
 });
 
 // Inline Query for Translation

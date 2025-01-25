@@ -66,8 +66,8 @@ bot.onText(/\/start/, async (msg) => {
             reply_markup: {
                 inline_keyboard: [
                     [{ text: '📜 Translate', callback_data: 'translate' }, { text: '🔍 Fix Grammar', callback_data: 'grammar_fix' }],
-                    [{ text: '🎵 Download MP3 YouTube', callback_data: 'download_mp3' }],
-                    [{ text: '🔗 Download TikTok', callback_data: 'download_video' }],
+                    [{ text: '🎵 YouTube Downloader', callback_data: 'download_mp3' }],
+                    [{ text: '🔗 TikTok Downloader', callback_data: 'download_video' }],
                     [{ text: '🖼️ Extract Text from Image', callback_data: 'extract_text' }],
                     [{ text: '⚙️ Settings', callback_data: 'settings' }]
                 ]

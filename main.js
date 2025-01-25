@@ -66,7 +66,7 @@ bot.on('inline_query', (query) => handleInlineContent(bot, query));
 bot.on('message', async (msg) => {
 
 
-    if (msg.text.startsWith('/')) {
+    if (!msg.photo && msg.text.startsWith('/')) {
         return;
     }
 

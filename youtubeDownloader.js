@@ -18,9 +18,12 @@ const handleYoutubeDownload = async (url) => {
             { responseType: 'stream' } // Stream the MP3 response
         );
 
-        // Generate a unique file name for the MP3
-        const timestamp = Date.now();
-        const mp3Path = path.join(downloadsDir, `youtube-${timestamp}.mp3`);
+        // Extract video title from response headers
+        const videoTitle = response.headers['x-video-title'] || 'youtube_audio';
+
+        // Generate a file name using the video title
+        const sanitizedTitle = videoTitle.replace(/[^a-zA-Z0-9-_ ]/g, ''); // Remove invalid characters
+        const mp3Path = path.join(downloadsDir, `${sanitizedTitle}.mp3`);
 
         // Save the streamed MP3 to a file
         const writer = fs.createWriteStream(mp3Path);

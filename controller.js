@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
-
+const TelegramBot = require('node-telegram-bot-api');
 // Save user without last_message column
 async function saveUser(chatId, username) {
     try {
@@ -91,6 +91,37 @@ async function incrementMessageCount(chatId) {
 }
 
 
+// Increment message count
+async function checkMessageCount(chatId) {
+    const { data, error } = await supabase
+        .from('users')
+        .select('total_messages, last_message_date')
+        .eq('user_id', chatId)
+        .single();
+
+    const today = new Date().toISOString().split('T')[0];  
+
+    if (!data) {
+        // If no data is found, return default (user doesn't exist yet).
+        return { canSend: false, totalMessages: 0 };
+    }
+
+    // Handle case where last_message_date is null or it's not today
+    if (!data.last_message_date || data.last_message_date.split('T')[0] !== today) {
+        // Update the message count to 1 if it's a new day
+    
+            return { canSend: true };
+    } else if (data.total_messages < 10) {
+       
+        return { canSend: true };
+    } else {
+        // If the user has reached the daily message limit, return false
+        return { canSend: false };
+    }
+}
+
+
+
 async function getMessageCount(chatId) {
     const { data } = await supabase
         .from('users')
@@ -158,5 +189,39 @@ async function getUserDefaultLanguage(chatId) {
     }
 }
 
+async function isUserMemberOrSubscribed(chatId) {
+    try {
+        // Check if the user is a member of the channel
+        const channelUsername = "@horansoftware"; 
+        const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+        const memberStatus = await bot.getChatMember(channelUsername, chatId);
+        
 
-module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage};
+        if (
+            memberStatus.status === "member" ||
+            memberStatus.status === "administrator" ||
+            memberStatus.status === "creator"
+        ) {
+            return true; // User is a member
+        }
+
+        // Check if the user is a premium subscriber
+        const { data, error } = await supabase
+            .from("users")
+            .select("is_premium")
+            .eq("user_id", chatId)
+            .single();
+
+        if (error) {
+            console.error("Error fetching user subscription status:", error.message);
+            return false; // Assume not subscribed on error
+        }
+
+        return data?.is_premium || false; // Return true if the user is premium, false otherwise
+    } catch (error) {
+        console.error("Error checking membership or subscription:", error.message);
+        return false; // Default to not a member or subscribed
+    }
+}
+
+module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage, isUserMemberOrSubscribed, checkMessageCount };

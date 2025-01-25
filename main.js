@@ -24,7 +24,7 @@ bot.onText(/\/start/, async (msg) => {
         chatId,
         `👋 Hello, *${msg.chat.first_name}*! Welcome to *Horan AI*! 🚀\n\nHere’s what I can do for you:\n\n` +
         `📜 *Text*: Send me any text to fix grammar or translate it.\n` +
-        `🔗 *Link*: Share a YouTube link to download it as MP3.\n` +
+        `🔗 *Link*: Share a YouTube/Tiktok link to download it.\n` +
         `🖼️ *Image*: Upload an image, and I’ll extract text from it using OCR.\n\n` +
         `⚙️ Tap *Settings* below to customize your experience.`,
         {
@@ -74,7 +74,29 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
 
-    // console.log('Received message:', msg.text);
+    // Check if the user is a member of the channel or a premium subscriber
+    const isMemberOrSubscribed = await db.isUserMemberOrSubscribed(chatId);
+       // Increment the message count and check if the user can continue
+    const { canSend } = await db.checkMessageCount(chatId);
+    if (!isMemberOrSubscribed && !canSend) {
+        await bot.sendMessage(
+            chatId,
+            "🚨 Oops! You've reached your daily message limit (10 messages). To use this bot, please follow our channel for updates or subscribe to premium. \n\n👉 [Follow Our Channel](https://t.me/hora_software)",
+            {
+                parse_mode: "Markdown",
+                disable_web_page_preview: true,
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: "📢 Join Channel", url: "https://t.me/horansoftware" },
+                            { text: "🌟 Subscribe to Premium", callback_data: "subscribe" },
+                        ],
+                    ],
+                },
+            }
+        );
+        return;
+    }
 
 
     // Handle images
@@ -168,6 +190,9 @@ bot.on('message', async (msg) => {
             await bot.sendVideo(chatId, videoStream, {
                 parse_mode: "Markdown",
             });
+
+            // increase the message count
+            await db.incrementMessageCount(chatId);
     
             // Delete the file after sending
             fs.unlinkSync(videoPath);
@@ -231,6 +256,10 @@ bot.on('message', async (msg) => {
             
         );
     
+
+        // increase the message count
+        await db.incrementMessageCount(chatId);
+
             fs.unlinkSync(mp3Path); // Clean up the file after sending
             // console.log(`Deleted MP3 file: ${mp3Path}`);
         } catch (error) {
@@ -299,9 +328,12 @@ bot.on('callback_query', async (query) => {
                 const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(message.text)}&target=${defaultLanguage}`);
                 const translatedText = decodeURIComponent(response.data.translatedText);
 
-                // Increment message count for both translation and grammar fix buttons
-            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-            if (!canSend) {
+               // Check if the user is a member of the channel or a premium subscriber
+                    const isMemberOrSubscribed = await db.isUserMemberOrSubscribed(chatId);
+                    // Increment the message count and check if the user can continue
+                    const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+                if (!isMemberOrSubscribed && !canSend) {
+        
                 return bot.sendMessage(chatId, 
                     "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
                     {
@@ -338,9 +370,12 @@ bot.on('callback_query', async (query) => {
 
                 const correctedText = await correctGrammar(message.text);
 
-                // Increment message count for both translation and grammar fix buttons
-            const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
-            if (!canSend) {
+               // Check if the user is a member of the channel or a premium subscriber
+               const isMemberOrSubscribed = await db.isUserMemberOrSubscribed(chatId);
+               // Increment the message count and check if the user can continue
+               const { canSend, totalMessages } = await db.incrementMessageCount(chatId);
+           if (!isMemberOrSubscribed && !canSend) {
+   
                 return bot.sendMessage(chatId, 
                     "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\nBut don't worry! You can continue using the bot by buying more credits! 💳✨\n\n👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
                     {
@@ -369,6 +404,11 @@ bot.on('callback_query', async (query) => {
             }
         }
     }
+
+    // Handle the "subscribe" button callback  coming soon
+    if (query.data === 'subscribe') {
+        bot.sendMessage(chatId, '🔒 Subscription feature is coming soon. Stay tuned!, activate feature by joining the channel')
+        };
 
     // Handle the "settings" button callback
     if (query.data === 'settings') {
@@ -465,6 +505,8 @@ bot.on('callback_query', async (query) => {
             bot.sendMessage(chatId, 'An error occurred while updating your language. Please try again.');
         }
     }
+
+
 
  
 

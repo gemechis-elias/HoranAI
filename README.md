@@ -5,7 +5,7 @@
 ![Telegram Bot API](https://img.shields.io/badge/Telegram_Bot_API-latest-blue)
 ![GitHub Stars](https://img.shields.io/github/stars/gemechis-elias/HoranAI?style=social)
 
-HoranAI is a Node.js-powered Telegram bot designed for grammar correction and translation using the OpenAI API and an external translation service. This bot allows users to send messages for grammar correction and supports inline message editing for easy interaction within chats.
+HoranAI is a Node.js-powered Telegram bot designed for All in one Tool using the OpenAI API and an external translation service. This bot allows users to send messages for grammar correction and supports inline message editing for easy interaction within chats.
 
 ## Features
 
@@ -14,6 +14,7 @@ HoranAI is a Node.js-powered Telegram bot designed for grammar correction and tr
 - **Inline Message Support:** Perform corrections and translations directly in any chat using inline mode.
 - **User Interaction:** Greet users on first start with a welcome message.
 - **Youtube Video Download:** Download Youtube videos by sending the video link.
+- **Tiktok Video Download:** Download Tiktok videos by sending the video link.
 - **OCR:** Extract text from images using Optical Character Recognition.
 - **Inline Buttons:**
   - `Translate`: Translates the corrected message.

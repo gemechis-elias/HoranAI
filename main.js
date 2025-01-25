@@ -2,7 +2,7 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const { correctGrammar, getUserInfo } = require('./helpers');
-const db = require('./database');
+const db = require('./controller.js');
 const { handleInlineContent } = require('./inline_query');
 const { handleYoutubeDownload } = require('./youtube_downloader.js');
 const { handleTikTokDownload } = require('./tiktok_downloader.js');

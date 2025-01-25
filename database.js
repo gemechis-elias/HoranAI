@@ -100,4 +100,63 @@ async function getMessageCount(chatId) {
     return data ? data.total_messages : 0;
 }
 
-module.exports = { saveUser, incrementMessageCount, getMessageCount };
+async function getUserSettings(chatId) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('username, is_premium, subscription_date, total_messages, default_language')
+            .eq('user_id', chatId)
+            .single();
+
+        if (error) {
+            console.error('Error fetching user settings:', error.message);
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Unexpected error while fetching user settings:', error.message);
+        return null;
+    }
+}
+async function updateUserLanguage(chatId, language) {
+    try {
+        const { error } = await supabase
+            .from('users')
+            .update({ default_language: language })
+            .eq('user_id', chatId);
+
+        if (error) {
+            console.error('Error updating user language:', error.message);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Unexpected error while updating user language:', error.message);
+        return false;
+    }
+}
+
+async function getUserDefaultLanguage(chatId) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('default_language')
+            .eq('user_id', chatId)
+            .single();
+
+        if (error) {
+            console.error('Error fetching user default language:', error.message);
+            return 'en'; // Return 'en' as a fallback default language
+        }
+
+        return data?.default_language || 'en'; // If the user doesn’t have a default language, fallback to 'en'
+    } catch (error) {
+        console.error('Unexpected error while fetching default language:', error.message);
+        return 'en'; // Return 'en' as a fallback default language
+    }
+}
+
+
+module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage};

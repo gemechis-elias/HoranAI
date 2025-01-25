@@ -176,12 +176,13 @@ bot.on('callback_query', async (query) => {
 
     if (query.message.reply_to_message) {
         const userMessageId = query.message.reply_to_message.message_id;
+        const defaultLanguage = await db.getUserDefaultLanguage(chatId);
 
         if (query.data.startsWith('translate:')) {
             try {
                 const message = query.message.reply_to_message;
 
-                const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(message.text)}&target=am`);
+                const response = await axios.get(`${process.env.TRANSLATE_API_URL}?q=${encodeURIComponent(message.text)}&target=${defaultLanguage}`);
                 const translatedText = decodeURIComponent(response.data.translatedText);
 
                 // Increment message count for both translation and grammar fix buttons
@@ -254,6 +255,105 @@ bot.on('callback_query', async (query) => {
             }
         }
     }
+
+    // Handle the "settings" button callback
+    if (query.data === 'settings') {
+        try {
+            // Fetch user info from the database
+            const userInfo = await db.getUserSettings(chatId);
+            if (!userInfo) {
+                return bot.sendMessage(chatId, 'No user data found.');
+            }
+
+            // Get user's profile picture URL
+            let profilePicUrl = null;
+            try {
+                const photos = await bot.getUserProfilePhotos(chatId, { limit: 1 });
+                if (photos.total_count > 0) {
+                    const fileId = photos.photos[0][0].file_id; // Use the first photo
+                    profilePicUrl = await bot.getFileLink(fileId);
+                }
+            } catch (error) {
+                console.error('Error fetching profile picture:', error.message);
+            }
+
+            // Fallback to default placeholder if no profile picture
+            if (!profilePicUrl) {
+                profilePicUrl = 'assets/profile.jpg';
+            }
+
+            // Generate the settings message
+            const settingsMessage = `👤 *Your Settings*:\n\n` +
+                `🔹 *Username*: ${userInfo.username || 'N/A'}\n` +
+                `🔹 *Is Premium*: ${userInfo.is_premium ? 'Yes 🌟' : 'No'}\n` +
+                `🔹 *Subscription Date*: ${userInfo.subscription_date || 'Not Subscribed'}\n` +
+                `🔹 *Today's Messages*: ${userInfo.total_messages || 0}\n` +
+                `🔹 *Default Language*: ${userInfo.default_language || 'en'}\n\n` +
+                `Use the buttons below to change settings.`;
+
+            // Send the profile picture and settings
+            await bot.sendPhoto(chatId, profilePicUrl, {
+                caption: settingsMessage,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🌐 Change Default Language', callback_data: 'change_language' }],
+                        [{ text: '🔒 Subscribe (Coming Soon)', callback_data: 'subscribe' }]
+                    ]
+                }
+            });
+        } catch (error) {
+            console.error('Error handling settings callback:', error.message);
+            bot.sendMessage(chatId, 'Failed to load settings. Please try again.');
+        }
+    }
+
+    // Handle "change language" callback
+    if (query.data === 'change_language') {
+        bot.sendMessage(chatId, '🌐 Select your default language:', {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: 'English', callback_data: 'set_language_en' },
+                        { text: 'Amharic', callback_data: 'set_language_am' }
+                    ],
+                    [
+                        { text: 'Oromo', callback_data: 'set_language_or' },
+                        { text: 'Tigrinya', callback_data: 'set_language_ti' }
+                    ],
+                    [
+                        { text: 'Somali', callback_data: 'set_language_so' },
+                        { text: 'Arabic', callback_data: 'set_language_ar' }
+                    ],
+                    [
+                        { text: 'French', callback_data: 'set_language_fr' },
+                        { text: 'Spanish', callback_data: 'set_language_es' }
+                    ]
+                ]
+            }
+        });
+    }
+
+    // Handle setting a specific language
+    if (query.data.startsWith('set_language_')) {
+        const selectedLanguage = query.data.replace('set_language_', '');
+        try {
+            const success = await db.updateUserLanguage(chatId, selectedLanguage);
+            if (!success) {
+                return bot.sendMessage(chatId, 'Failed to update your default language. Please try again.');
+            }
+
+            bot.sendMessage(chatId, `✅ Your default language has been updated to *${selectedLanguage}*.`, {
+                parse_mode: 'Markdown'
+            });
+        } catch (error) {
+            console.error('Error updating language:', error.message);
+            bot.sendMessage(chatId, 'An error occurred while updating your language. Please try again.');
+        }
+    }
+
+ 
+
 });
 
 

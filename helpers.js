@@ -20,14 +20,3 @@ async function correctGrammar(text) {
 }
 
 module.exports = { correctGrammar };
-
-
-async function getUserInfo(chatId) {
-    // Placeholder for user data
-    return {
-        username: "SampleUser",
-        profilePicUrl: "https://via.placeholder.com/150"
-    };
-}
-
-module.exports = { correctGrammar, getUserInfo };

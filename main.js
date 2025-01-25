@@ -18,7 +18,7 @@ bot.on('polling_error', (error) => {
 // Greet new users
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
+    await db.saveUser(chatId, msg.chat.username);
     bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to Horan AI.\nSend me any text or image`, {
         reply_markup: {
             inline_keyboard: [
@@ -35,12 +35,42 @@ bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
 // Check for YouTube video links and handle MP3 download first
 bot.on('message', async (msg) => {
+
     const chatId = msg.chat.id;
-    await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
+    await db.saveUser(chatId, msg.chat.username);
 
     if (!msg.text || msg.text.startsWith('/')) return;
 
-    
+    console.log('Received message:', msg);
+
+
+    // Handle images
+    if (msg.photo) {
+        console.log('Processing image:', msg.photo);
+
+        try {
+            // Get the highest resolution photo
+            const fileId = msg.photo[msg.photo.length - 1].file_id;
+
+            // Get the file URL
+            const fileUrl = await bot.getFileLink(fileId);
+            console.log('File URL:', fileUrl);
+
+            // Inform the user that the image is being processed
+            await bot.sendMessage(chatId, "Processing the image to extract text...");
+
+            // Call the OCR handler
+            const extractedText = await extractTextFromImage(fileUrl);
+            console.log('Extracted text:', extractedText);
+
+            // Send the extracted text back to the user
+            await bot.sendMessage(chatId, `Extracted text:\n\n${extractedText}`);
+        } catch (error) {
+            console.error('Error processing image:', error);
+            await bot.sendMessage(chatId, "Failed to process the image. Please try again.");
+        }
+        return;
+    }
 
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/;
     const match = msg.text.match(youtubeRegex);
@@ -71,27 +101,8 @@ bot.on('message', async (msg) => {
         return;
     }
 
-    // Handle images
-    if (msg.photo) {
-        try {
-            const fileId = msg.photo[msg.photo.length - 1].file_id; // Get the highest resolution photo
-            const fileUrl = await bot.getFileLink(fileId);
+   
 
-            // Inform the user the image is being processed
-            await bot.sendMessage(chatId, "Processing the image to extract text...");
-
-            // Call the OCR handler
-            const extractedText = await extractTextFromImage(fileUrl);
-
-            // Send the extracted text back to the user
-            await bot.sendMessage(chatId, `Extracted text:\n\n${extractedText}`);
-        } catch (error) {
-            console.error('Error processing image:', error);
-            await bot.sendMessage(chatId, "Failed to process the image. Please try again.");
-        }
-        return;
-    }
-    
 
     // Existing grammar and translation functionality
     try {

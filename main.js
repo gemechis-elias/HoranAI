@@ -155,11 +155,18 @@ bot.on('message', async (msg) => {
     
             // Send the MP3 file with a valid name
             const mp3Stream = fs.createReadStream(mp3Path);
-            await bot.sendDocument(chatId, mp3Stream, {
+            await bot.sendAudio(chatId, mp3Stream, options = {
+                title: videoTitle,
                 caption: `🎵 *${videoTitle}*`,
                 parse_mode: "Markdown",
                 thumbnail: thumbnail,
-            });
+                
+            },
+            fileOptions = {
+                filename: `${videoTitle}.mp3`
+            }
+            
+        );
     
             fs.unlinkSync(mp3Path); // Clean up the file after sending
             console.log(`Deleted MP3 file: ${mp3Path}`);

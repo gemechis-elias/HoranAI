@@ -1,7 +1,8 @@
 const axios = require("axios");
 const path = require("path");
 const fs = require("fs");
-const youtubeThumbnail = require('youtube-thumbnail');
+const youtubeThumbnail = require("youtube-thumbnail");
+
 const handleYoutubeDownload = async (url) => {
     try {
         // Ensure the downloads folder exists
@@ -33,10 +34,14 @@ const handleYoutubeDownload = async (url) => {
         const writer = fs.createWriteStream(mp3Path);
         response.data.pipe(writer);
 
+        // Get the YouTube video thumbnail
         const thumbnail = youtubeThumbnail(url);
+        const thumbnailUrl = thumbnail.default.url;
+
+        console.log(`Thumbnail URL: ${thumbnailUrl}`);
 
         return new Promise((resolve, reject) => {
-            writer.on("finish", () => resolve({ videoTitle, mp3Path, thumbnail }));
+            writer.on("finish", () => resolve({ videoTitle, mp3Path, thumbnailUrl }));
             writer.on("error", (error) => {
                 console.error("Error writing MP3 file:", error);
                 reject(new Error("Failed to save the downloaded MP3."));

@@ -19,6 +19,17 @@ async function saveUser(chatId, username) {
 
         if (data) {
             console.log('User already exists:', data.user_id);
+            // update username if it's different
+            if (data.username !== username) {
+                const { error: updateError } = await supabase.from('users')
+                    .update({ username: username })
+                    .eq('user_id', chatId);
+                if (updateError) {
+                    console.error('Error updating username:', updateError.message);
+                } else {
+                    // console.log('Username updated:', chatId);
+                }
+            }
             return;
         }
 

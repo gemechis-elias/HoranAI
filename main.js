@@ -113,7 +113,7 @@ bot.on('message', async (msg) => {
         }
         return;
     }
-    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/;
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w\-]+)/;
     const match = msg.text.match(youtubeRegex);
 
     if (match) {
@@ -151,9 +151,13 @@ bot.on('message', async (msg) => {
                 message_id: processingMessage.message_id
             });
     
-            // Send the MP3 file to the user
-            await bot.sendDocument(chatId, mp3Path);
-            // await bot.sendMessage(chatId, "🎵 Here is your MP3 file:");
+            // Send the MP3 file to the user with thumbnail
+            await bot.sendDocument(chatId, mp3Path,
+                {
+                    thumb: 'https://cdn.pixabay.com/photo/2017/08/30/01/05/milky-way-2695569_960_720.jpg',
+                    caption: 'Here is the MP3 file you requested.'
+                }
+            );
     
             // Delete the file after successfully sending it
             try {

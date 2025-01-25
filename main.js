@@ -99,18 +99,19 @@ bot.onText(/\/settings/, async (msg) => {
 
 
   // Handle the /total_users command
-//   bot.onText(/\/total_users/, async (msg) => {
-//     try {
-//         const totalUsers = await db.getTotalUsers();
-//         await bot.sendMessage(chatId, `👥 Total users: *${totalUsers}*`, {
-//             parse_mode: 'Markdown',
-//         });
-//     } catch (error) {
-//         console.error('Error fetching total users:', error);
-//         await bot.sendMessage(chatId, '❌ Unable to fetch total users at the moment.');
-//     }
+  bot.onText(/\/total_users/, async (msg) => {
+    const chatId = msg.chat.id;
+    try {
+        const totalUsers = await db.getTotalUsers();
+        await bot.sendMessage(chatId, `👥 Total users: *${totalUsers}*`, {
+            parse_mode: 'Markdown',
+        });
+    } catch (error) {
+        console.error('Error fetching total users:', error);
+        await bot.sendMessage(chatId, '❌ Unable to fetch total users at the moment.');
+    }
 
-// });
+});
 
 // Inline Query for Translation
 bot.on('inline_query', (query) => handleInlineContent(bot, query));

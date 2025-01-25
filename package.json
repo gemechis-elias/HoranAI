@@ -1,5 +1,5 @@
 {
-  "name": "lisanbot",
+  "name": "Horan AI",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -7,7 +7,7 @@
   },
   "keywords": [],
   "author": "Gemechis Elias",
-  "license": "ISC",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",

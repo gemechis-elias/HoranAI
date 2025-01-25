@@ -114,11 +114,46 @@ bot.on('message', async (msg) => {
         return;
     }
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w\-]+)/;
-    const match = msg.text.match(youtubeRegex);
- 
+    const youtube_match = msg.text.match(youtubeRegex);
+
+    const tiktokRegex = /(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com\/(?:@[\w\-]+\/video\/|v\/)|vt\.tiktok\.com\/([\w\-]+))/;
+    const tiktokMatch = msg.text.match(tiktokRegex);
+
+    if (tiktokMatch) {
+        try {
+            const processingMessage = await bot.sendMessage(
+                chatId,
+                "Processing your TikTok video. Please wait..."
+            );
+
+            // Call the TikTok downloader
+            const { videoTitle, videoPath } = await handleTikTokDownload(tiktokMatch[0]);
+
+            await bot.editMessageText("✅ Download complete. Sending video...", {
+                chat_id: chatId,
+                message_id: processingMessage.message_id,
+            });
+
+            const videoStream = fs.createReadStream(videoPath);
+
+            // Send the video file to the user
+            await bot.sendVideo(chatId, videoStream, {
+                caption: `🎥 *${videoTitle}*`,
+                parse_mode: "Markdown",
+            });
+
+            // Delete the file after sending
+            fs.unlinkSync(videoPath);
+            console.log(`Deleted video file: ${videoPath}`);
+        } catch (error) {
+            console.error("Error handling TikTok download:", error);
+            await bot.sendMessage(chatId, "❌ An error occurred while processing the TikTok video.");
+        }
+        return;
+    }
 
 
-    if (match) {
+    if (youtube_match) {
         try {
             const processingMessage = await bot.sendMessage(chatId, "Processing your YouTube video for MP3 download...");
     

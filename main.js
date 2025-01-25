@@ -145,7 +145,7 @@ bot.on('message', async (msg) => {
             }, 1000);
     
             // Call the handleYoutubeDownload function
-            const { videoTitle, mp3Path } = await handleYoutubeDownload(match[0]);
+            const { videoTitle, mp3Path, thumbnail } = await handleYoutubeDownload(match[0]);
     
             clearInterval(progressInterval);
             await bot.editMessageText("✅ Download complete. Sending MP3 file...", {
@@ -158,6 +158,7 @@ bot.on('message', async (msg) => {
             await bot.sendDocument(chatId, mp3Stream, {
                 caption: `🎵 *${videoTitle}*`,
                 parse_mode: "Markdown",
+                thumbnail: thumbnail,
             });
     
             fs.unlinkSync(mp3Path); // Clean up the file after sending

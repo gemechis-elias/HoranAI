@@ -16,6 +16,7 @@
     "fs": "^0.0.1-security",
     "node-telegram-bot-api": "^0.66.0",
     "ocr-space-api-wrapper": "^2.3.2",
-    "openai": "^4.77.0"
+    "openai": "^4.77.0",
+    "youtube-thumbnail": "^1.3.0"
   }
 }

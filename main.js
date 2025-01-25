@@ -115,69 +115,59 @@ bot.on('message', async (msg) => {
     }
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w\-]+)/;
     const match = msg.text.match(youtubeRegex);
+ 
+
 
     if (match) {
         try {
-            // Send an initial message and get its message ID
             const processingMessage = await bot.sendMessage(chatId, "Processing your YouTube video for MP3 download...");
     
-            // Start a "progress simulation" loop
             let progress = 0;
             const progressInterval = setInterval(async () => {
                 progress += 10;
-                const progressText = `Downloading: [${'▬'.repeat(progress / 10)}${' '.repeat(10 - progress / 10)}] ${progress}%`;
-                await bot.editMessageText(progressText, {
-                    chat_id: chatId,
-                    message_id: processingMessage.message_id
-                });
+                const progressText = `Downloading: [${"▬".repeat(progress / 10)}${" ".repeat(10 - progress / 10)}] ${progress}%`;
+                try {
+                    await bot.editMessageText(progressText, {
+                        chat_id: chatId,
+                        message_id: processingMessage.message_id,
+                    });
+                } catch (editError) {
+                    console.error("Error updating progress:", editError);
+                }
     
-                // Stop the progress when it reaches 100%
                 if (progress >= 100) {
                     clearInterval(progressInterval);
-                    await bot.editMessageText("Converting format please wait...", {
+                    await bot.editMessageText("Converting format, please wait...", {
                         chat_id: chatId,
-                        message_id: processingMessage.message_id
+                        message_id: processingMessage.message_id,
                     });
                 }
-            }, 1000); // Update every second
+            }, 1000);
     
             // Call the handleYoutubeDownload function
-            const mp3Path = await handleYoutubeDownload(match[0]);
+            const { videoTitle, mp3Path } = await handleYoutubeDownload(match[0]);
     
-            // Stop the progress simulation and delete the "Converting format..." message
             clearInterval(progressInterval);
             await bot.editMessageText("✅ Download complete. Sending MP3 file...", {
                 chat_id: chatId,
-                message_id: processingMessage.message_id
+                message_id: processingMessage.message_id,
             });
     
-            // Send the MP3 file to the user with thumbnail
-            await bot.sendDocument(chatId, mp3Path,
-                {
-                    thumb: 'https://cdn.pixabay.com/photo/2017/08/30/01/05/milky-way-2695569_960_720.jpg',
-                    caption: 'Here is the MP3 file you requested.'
-                }
-            );
+            // Send the MP3 file with a valid name
+            const mp3Stream = fs.createReadStream(mp3Path);
+            await bot.sendDocument(chatId, mp3Stream, {
+                caption: `🎵 *${videoTitle}*`,
+                parse_mode: "Markdown",
+            });
     
-            // Delete the file after successfully sending it
-            try {
-                fs.unlinkSync(mp3Path);
-                console.log(`Deleted file: ${mp3Path}`);
-            } catch (deleteError) {
-                console.error(`Error deleting file: ${mp3Path}`, deleteError);
-            }
+            fs.unlinkSync(mp3Path); // Clean up the file after sending
+            console.log(`Deleted MP3 file: ${mp3Path}`);
         } catch (error) {
-            console.error('Error handling YouTube download:', error);
-            bot.sendMessage(chatId, "❌ An error occurred while processing the YouTube video.");
+            console.error("Error handling YouTube download:", error);
+            await bot.sendMessage(chatId, "❌ An error occurred while processing the YouTube video.");
         }
-        return;
     }
     
-    
-
-   
-
-
     // Existing grammar and translation functionality
     try {
         const correctedText = await correctGrammar(msg.text);

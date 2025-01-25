@@ -4,9 +4,10 @@ const axios = require('axios');
 const { correctGrammar, getUserInfo } = require('./helpers');
 const db = require('./database');
 const { handleInlineContent } = require('./inline_query');
-const { handleYoutubeDownload } = require('./youtubeDownloader');
+const { handleYoutubeDownload } = require('./youtube_downloader.js');
+const { handleTikTokDownload } = require('./tiktok_downloader.js');
 const fs = require('fs');
-const { extractTextFromImage } = require('./imageHandler');
+const { extractTextFromImage } = require('./image_handler.js');
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
@@ -73,12 +74,12 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
 
-    console.log('Received message:', msg.text);
+    // console.log('Received message:', msg.text);
 
 
     // Handle images
     if (msg.photo) {
-        console.log('Processing image:', msg.photo);
+        // console.log('Processing image:', msg.photo);
 
         try {
             // Get the highest resolution photo
@@ -86,14 +87,14 @@ bot.on('message', async (msg) => {
 
             // Get the file URL
             const fileUrl = await bot.getFileLink(fileId);
-            console.log('File URL:', fileUrl);
+            // console.log('File URL:', fileUrl);
 
             // Inform the user that the image is being processed
             await bot.sendMessage(chatId, "Processing the image to extract text...");
 
             // Call the OCR handler
             const extractedText = await extractTextFromImage(fileUrl);
-            console.log('Extracted text:', extractedText);
+            // console.log('Extracted text:', extractedText);
 
             // Send the extracted text back to the user
             // await bot.sendMessage(chatId, `Extracted text:\n\n`);
@@ -116,42 +117,69 @@ bot.on('message', async (msg) => {
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w\-]+)/;
     const youtube_match = msg.text.match(youtubeRegex);
 
-    const tiktokRegex = /(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com\/(?:@[\w\-]+\/video\/|v\/)|vt\.tiktok\.com\/([\w\-]+))/;
-    const tiktokMatch = msg.text.match(tiktokRegex);
+    const tiktokRegex = /https?:\/\/(?:www\.)?tiktok\.com\/[^\s]+|https?:\/\/vm\.tiktok\.com\/[^\s]+/;
 
+    const tiktokMatch = msg.text.match(tiktokRegex);
     if (tiktokMatch) {
+        const tiktokUrl = tiktokMatch[0];
+        console.log('TikTok URL:', tiktokUrl);
         try {
             const processingMessage = await bot.sendMessage(
                 chatId,
                 "Processing your TikTok video. Please wait..."
             );
-
+    
+            // Start a progress simulation
+            let progress = 0;
+            const progressInterval = setInterval(async () => {
+                progress += 10;
+                const progressText = `Downloading: [${'▬'.repeat(progress / 10)}${' '.repeat(10 - progress / 10)}] ${progress}%`;
+                try {
+                    await bot.editMessageText(progressText, {
+                        chat_id: chatId,
+                        message_id: processingMessage.message_id,
+                    });
+                } catch (editError) {
+                    console.error("Error updating progress:", editError);
+                }
+    
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    await bot.editMessageText("Converting format, please wait...", {
+                        chat_id: chatId,
+                        message_id: processingMessage.message_id,
+                    });
+                }
+            }, 1000);
+    
             // Call the TikTok downloader
-            const { videoTitle, videoPath } = await handleTikTokDownload(tiktokMatch[0]);
-
+            const { videoTitle, videoPath } = await handleTikTokDownload(tiktokUrl);
+    
+            // Stop the progress simulation and update the message
+            clearInterval(progressInterval);
             await bot.editMessageText("✅ Download complete. Sending video...", {
                 chat_id: chatId,
                 message_id: processingMessage.message_id,
             });
-
+    
             const videoStream = fs.createReadStream(videoPath);
-
+    
             // Send the video file to the user
             await bot.sendVideo(chatId, videoStream, {
-                caption: `🎥 *${videoTitle}*`,
                 parse_mode: "Markdown",
             });
-
+    
             // Delete the file after sending
             fs.unlinkSync(videoPath);
-            console.log(`Deleted video file: ${videoPath}`);
+            // console.log(`Deleted video file: ${videoPath}`);
         } catch (error) {
             console.error("Error handling TikTok download:", error);
             await bot.sendMessage(chatId, "❌ An error occurred while processing the TikTok video.");
         }
         return;
     }
-
+    
+    
 
     if (youtube_match) {
         try {
@@ -159,8 +187,8 @@ bot.on('message', async (msg) => {
     
             let progress = 0;
             const progressInterval = setInterval(async () => {
-                progress += 10;
-                const progressText = `Downloading: [${"▬".repeat(progress / 10)}${" ".repeat(10 - progress / 10)}] ${progress}%`;
+                progress += 5;
+                const progressText = `Downloading: [${"▬".repeat(progress / 5)}${" ".repeat(5 - progress / 5)}] ${progress}%`;
                 try {
                     await bot.editMessageText(progressText, {
                         chat_id: chatId,
@@ -204,7 +232,7 @@ bot.on('message', async (msg) => {
         );
     
             fs.unlinkSync(mp3Path); // Clean up the file after sending
-            console.log(`Deleted MP3 file: ${mp3Path}`);
+            // console.log(`Deleted MP3 file: ${mp3Path}`);
         } catch (error) {
             console.error("Error handling YouTube download:", error);
             await bot.sendMessage(chatId, "❌ An error occurred while processing the YouTube video.");

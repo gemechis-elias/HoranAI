@@ -113,21 +113,44 @@ bot.on('message', async (msg) => {
         }
         return;
     }
-
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/;
     const match = msg.text.match(youtubeRegex);
-
+    
     if (match) {
         try {
-            await bot.sendMessage(chatId, "Processing your YouTube video for MP3 download...");
-
+            // Send an initial message and get its message ID
+            const processingMessage = await bot.sendMessage(chatId, "Processing your YouTube video for MP3 download...");
+    
+            // Start a "progress simulation" loop
+            let progress = 0;
+            const progressInterval = setInterval(async () => {
+                progress += 10;
+                const progressText = `Downloading: [${'▬'.repeat(progress / 10)}${' '.repeat(10 - progress / 10)}] ${progress}%`;
+                await bot.editMessageText(progressText, {
+                    chat_id: chatId,
+                    message_id: processingMessage.message_id
+                });
+    
+                // Stop the progress when it reaches 100%
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                }
+            }, 1000); // Update every second
+    
             // Call the handleYoutubeDownload function
             const mp3Path = await handleYoutubeDownload(match[0]);
-
+    
+            // Stop the progress simulation and update the message
+            clearInterval(progressInterval);
+            await bot.editMessageText("✅ Download complete. Sending MP3 file...", {
+                chat_id: chatId,
+                message_id: processingMessage.message_id
+            });
+    
             // Send the MP3 file to the user
             await bot.sendDocument(chatId, mp3Path);
-            await bot.sendMessage(chatId, "Here is your MP3 file:");
-
+            await bot.sendMessage(chatId, "🎵 Here is your MP3 file:");
+    
             // Delete the file after successfully sending it
             try {
                 fs.unlinkSync(mp3Path);
@@ -135,13 +158,13 @@ bot.on('message', async (msg) => {
             } catch (deleteError) {
                 console.error(`Error deleting file: ${mp3Path}`, deleteError);
             }
-
         } catch (error) {
             console.error('Error handling YouTube download:', error);
-            bot.sendMessage(chatId, "An error occurred while processing the YouTube video.");
+            bot.sendMessage(chatId, "❌ An error occurred while processing the YouTube video.");
         }
         return;
     }
+    
 
    
 

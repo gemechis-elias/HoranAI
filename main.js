@@ -166,6 +166,8 @@ bot.on('message', async (msg) => {
             console.error("Error handling YouTube download:", error);
             await bot.sendMessage(chatId, "❌ An error occurred while processing the YouTube video.");
         }
+
+        return;
     }
     
     // Existing grammar and translation functionality

@@ -51,28 +51,32 @@ bot.on('polling_error', (error) => {
 });
 
 
-// Greet new users
+// Greet new users with interactive options
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
+    await db.saveUser(chatId, msg.chat.username ? msg.chat.username : msg.chat.first_name);
+
+    // Send greeting message with interactive options
     bot.sendMessage(
         chatId,
         `👋 Hello, *${msg.chat.first_name}*! Welcome to *Horan AI*! 🚀\n\nHere’s what I can do for you:\n\n` +
-        `📜 *Text*: Send me any text to fix grammar or translate it.\n` +
-        `🔗 *Link*: Share a YouTube/Tiktok link to download it.\n` +
-        `🖼️ *Image*: Upload an image, and I’ll extract text from it using OCR.\n\n` +
-        `⚙️ Tap *Settings* below to customize your experience.`,
+        `Choose one of the options below to get started!`,
         {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
+                    [{ text: '📜 Translate', callback_data: 'translate' }, { text: '🔍 Fix Grammar', callback_data: 'grammar_fix' }],
+                    [{ text: '🎵 Download MP3 YouTube', callback_data: 'download_mp3' }],
+                    [{ text: '🔗 Download TikTok', callback_data: 'download_video' }],
+                    [{ text: '🖼️ Extract Text from Image', callback_data: 'extract_text' }],
                     [{ text: '⚙️ Settings', callback_data: 'settings' }]
                 ]
             }
         }
     );
-    
+
 });
+
 
 // if message is '/settings' call back user settings
 bot.onText(/\/settings/, async (msg) => {
@@ -274,6 +278,7 @@ bot.on('message', async (msg) => {
             }, 1000);
     
             // Call the handleYoutubeDownload function
+            console.log('Youtube URL:', youtube_match[0]);
             const { videoTitle, mp3Path, thumbnail } = await handleYoutubeDownload(youtube_match[0]);
     
             clearInterval(progressInterval);
@@ -548,8 +553,23 @@ bot.on('callback_query', async (query) => {
     }
 
 
+     // Handle different feature options
+     if (query.data.startsWith('translate')){
+        bot.sendMessage(chatId, '📜 Okay, send me the text you want to translate or fix grammar for.');
+     }
+        if (query.data.startsWith('grammar_fix')){
+            bot.sendMessage(chatId, '🔍 Okay, send me the text you want to fix grammar for.');
+        }
+        if (query.data.startsWith('download_mp3')){
+            bot.sendMessage(chatId, '🎵 Okay, send me the YouTube video link you want to download as MP3.');
+        }
+        if (query.data.startsWith('download_video')){
+            bot.sendMessage(chatId, '🔗 Okay, send me the TikTok video link you want to download.');
+        }
+        if (query.data.startsWith('extract_text')){
+            bot.sendMessage(chatId, '🖼️ Okay, send me the image you want to extract text from.');
+        }
 
- 
 
 });
 

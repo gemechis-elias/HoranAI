@@ -97,6 +97,21 @@ bot.onText(/\/settings/, async (msg) => {
 
 });
 
+
+  // Handle the /total_users command
+  bot.onText(/\/total_users/, async (msg) => {
+    try {
+        const totalUsers = await db.getTotalUsers();
+        await bot.sendMessage(chatId, `👥 Total users: *${totalUsers}*`, {
+            parse_mode: 'Markdown',
+        });
+    } catch (error) {
+        console.error('Error fetching total users:', error);
+        await bot.sendMessage(chatId, '❌ Unable to fetch total users at the moment.');
+    }
+
+});
+
 // Inline Query for Translation
 bot.on('inline_query', (query) => handleInlineContent(bot, query));
 
@@ -555,10 +570,10 @@ bot.on('callback_query', async (query) => {
 
      // Handle different feature options
      if (query.data.startsWith('translate')){
-        bot.sendMessage(chatId, '📜 Okay, send me the text you want to translate or fix grammar for.');
+        bot.sendMessage(chatId, '📜 Okay, send me the text you want to translate.');
      }
         if (query.data.startsWith('grammar_fix')){
-            bot.sendMessage(chatId, '🔍 Okay, send me the text you want to fix grammar for.');
+            bot.sendMessage(chatId, '🔍 Okay, send me the text you want to fix.');
         }
         if (query.data.startsWith('download_mp3')){
             bot.sendMessage(chatId, '🎵 Okay, send me the YouTube video link you want to download as MP3.');

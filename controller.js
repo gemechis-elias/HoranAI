@@ -189,5 +189,22 @@ async function getUserDefaultLanguage(chatId) {
     }
 }
 
+async function getTotalUsers() {
+    try {
+        const { count, error } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true }); // Count rows without fetching data
 
-module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage, checkMessageCount };
+        if (error) {
+            console.error('Error getting total users:', error.message);
+            return 0; // Return 0 if there is an error
+        }
+
+        return count || 0; // Return count or fallback to 0
+    } catch (error) {
+        console.error('Unexpected error while getting total users:', error.message);
+        return 0; // Return 0 if there is an exception
+    }
+}
+
+module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage, checkMessageCount, getTotalUsers};

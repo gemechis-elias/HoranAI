@@ -154,8 +154,14 @@ bot.on('message', async (msg) => {
             // Start a progress simulation
             let progress = 0;
             const progressInterval = setInterval(async () => {
-                progress += 10;
-                const progressText = `Downloading: [${'▬'.repeat(progress / 10)}${' '.repeat(10 - progress / 10)}] ${progress}%`;
+                progress += 5;
+            
+                // Ensure valid values for repeat
+                const progressBars = Math.min(progress / 5, 10); // Limit the bars to a maximum of 10
+                const remainingBars = Math.max(10 - progressBars, 0); // Ensure remaining bars are not negative
+            
+                const progressText = `Downloading: [${'▬'.repeat(progressBars)}${' '.repeat(remainingBars)}] ${progress}%`;
+            
                 try {
                     await bot.editMessageText(progressText, {
                         chat_id: chatId,
@@ -212,8 +218,8 @@ bot.on('message', async (msg) => {
     
             let progress = 0;
             const progressInterval = setInterval(async () => {
-                progress += 5;
-                const progressText = `Downloading: [${"▬".repeat(progress / 5)}${" ".repeat(5 - progress / 5)}] ${progress}%`;
+                progress += 10;
+                const progressText = `Downloading: [${"▬".repeat(progress / 10)}${" ".repeat(10 - progress / 10)}] ${progress}%`;
                 try {
                     await bot.editMessageText(progressText, {
                         chat_id: chatId,

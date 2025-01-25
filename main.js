@@ -18,7 +18,7 @@ bot.on('polling_error', (error) => {
 // Greet new users
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    await db.saveUser(chatId, msg.chat.username);
+    await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
     bot.sendMessage(chatId, `Hello ${msg.chat.first_name}! Welcome to Horan AI.\nSend me any text or image`, {
         reply_markup: {
             inline_keyboard: [
@@ -36,12 +36,15 @@ bot.on('inline_query', (query) => handleInlineContent(bot, query));
 // Check for YouTube video links and handle MP3 download first
 bot.on('message', async (msg) => {
 
+
+    if (msg.text.startsWith('/')) {
+        return;
+    }
+
     const chatId = msg.chat.id;
-    await db.saveUser(chatId, msg.chat.username);
+    await db.saveUser(chatId, msg.chat.username? msg.chat.username : msg.chat.first_name);
 
-    if (!msg.text || msg.text.startsWith('/')) return;
-
-    console.log('Received message:', msg);
+    console.log('Received message:', msg.text);
 
 
     // Handle images
@@ -64,7 +67,17 @@ bot.on('message', async (msg) => {
             console.log('Extracted text:', extractedText);
 
             // Send the extracted text back to the user
-            await bot.sendMessage(chatId, `Extracted text:\n\n${extractedText}`);
+            // await bot.sendMessage(chatId, `Extracted text:\n\n`);
+
+            await bot.sendMessage(
+                chatId,
+                `${extractedText}`,
+                {
+                    reply_to_message_id: msg.message_id,
+                    
+                }
+            );
+
         } catch (error) {
             console.error('Error processing image:', error);
             await bot.sendMessage(chatId, "Failed to process the image. Please try again.");

@@ -122,7 +122,7 @@ bot.on('inline_query', (query) => handleInlineContent(bot, query));
 bot.on('message', async (msg) => {
 
 
-    if (!msg.photo && msg.text.startsWith('/')) {
+    if (!msg.photo &&  /^\/.*/.test(msg.text)) {
         return;
     }
 
@@ -249,6 +249,7 @@ bot.on('message', async (msg) => {
     
             // Send the video file to the user
             await bot.sendVideo(chatId, videoStream, {
+                caption: `🎥 @horansoftware `,
                 parse_mode: "Markdown",
             });
 

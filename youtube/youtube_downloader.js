@@ -6,7 +6,7 @@ const youtubeThumbnail = require("youtube-thumbnail");
 const handleYoutubeDownload = async (url) => {
     try {
         // Ensure the downloads folder exists
-        const downloadsDir = path.resolve(__dirname, "downloads");
+        const downloadsDir = path.resolve(__dirname, "../downloads");
         if (!fs.existsSync(downloadsDir)) {
             fs.mkdirSync(downloadsDir);
         }
@@ -28,7 +28,7 @@ const handleYoutubeDownload = async (url) => {
         }
 
         // Generate the MP3 file path
-        const mp3Path = path.join(downloadsDir, `${sanitizedTitle}_${timestamp}.mp3`);
+        const mp3Path = path.join(downloadsDir, `youtube_${timestamp}.mp3`);
 
         // Save the MP3 file
         const writer = fs.createWriteStream(mp3Path);

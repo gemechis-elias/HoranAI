@@ -7,7 +7,7 @@ const handleTikTokDownload = async (url) => {
 
     try {
         // Ensure the downloads folder exists
-        const downloadsDir = path.resolve(__dirname, "downloads");
+        const downloadsDir = path.resolve(__dirname, "../downloads");
         if (!fs.existsSync(downloadsDir)) {
             fs.mkdirSync(downloadsDir);
         }
@@ -33,7 +33,7 @@ const handleTikTokDownload = async (url) => {
         }
 
         // Generate the video file path
-        const videoPath = path.join(downloadsDir, `${sanitizedTitle}_${timestamp}.mp4`);
+        const videoPath = path.join(downloadsDir, `tiktok_${timestamp}.mp4`);
 
         // Save the video file
         const writer = fs.createWriteStream(videoPath);

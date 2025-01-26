@@ -55,9 +55,9 @@ async function youtubeHandler(bot, chatId, youtubeUrl) {
                 parse_mode: "Markdown",
                 thumbnail: thumbnail,
             },
-            {
-                filename: `${videoTitle}.mp3`,
-            }
+            // {
+            //     filename: `${videoTitle}.mp3`,
+            // }
         );
 
         // Increment message count

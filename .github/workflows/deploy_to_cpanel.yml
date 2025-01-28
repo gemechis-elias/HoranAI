@@ -22,7 +22,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./                             # Directory to upload
-          server-dir: /                             # Remote root directory
+          server-dir: /horan-ai/                             # Remote root directory
           protocol: ftps                            # Use FTPS
           timeout: 600000                           # Set a high timeout for large projects
           log-level: verbose

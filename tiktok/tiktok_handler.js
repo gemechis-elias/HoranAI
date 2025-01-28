@@ -63,7 +63,7 @@ async function tiktokHandler(bot, chatId, tiktokUrl) {
         fs.unlinkSync(videoPath);
     } catch (error) {
         console.error("Error handling TikTok download:", error);
-        await bot.sendMessage(chatId, "❌ An error occurred while processing the TikTok video.", error);
+        await bot.sendMessage(chatId, "❌ Too many request at momemnt Please try again later", error);
     }
 }
 

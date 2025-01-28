@@ -48,7 +48,7 @@ const handleTikTokDownload = async (url) => {
         });
     } catch (error) {
         console.error("Error during TikTok download:", error);
-        throw new Error("Failed to download the TikTok video.");
+        throw new Error("Failed to download the TikTok video.", error);
     }
 };
 

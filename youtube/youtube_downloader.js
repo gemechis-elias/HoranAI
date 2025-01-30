@@ -35,10 +35,10 @@ const handleYoutubeDownload = async (url) => {
         response.data.pipe(writer);
 
         // Get the YouTube video thumbnail
-        const thumbnail = youtubeThumbnail(url);
+        const thumbnail = await youtubeThumbnail(url);
         const thumbnailUrl = thumbnail.default.url;
 
-        // console.log(`Thumbnail URL: ${thumbnailUrl}`);
+     
 
         return new Promise((resolve, reject) => {
             writer.on("finish", () => resolve({ videoTitle, mp3Path, thumbnailUrl }));

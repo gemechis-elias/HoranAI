@@ -34,8 +34,10 @@ async function youtubeHandler(bot, chatId, youtubeUrl) {
         }, 1000);
 
         // Call the YouTube download handler
-        console.log("YouTube URL:", youtubeUrl);
-        const { videoTitle, mp3Path, thumbnail } = await handleYoutubeDownload(youtubeUrl);
+        const { videoTitle, mp3Path, thumbnailUrl } = await handleYoutubeDownload(youtubeUrl);
+        console.log(`========= Thumbnail URL: ${thumbnailUrl}`);
+
+        
 
         clearInterval(progressInterval);
 
@@ -49,15 +51,13 @@ async function youtubeHandler(bot, chatId, youtubeUrl) {
         await bot.sendAudio(
             chatId,
             mp3Stream,
-            {
+    
+           {
                 title: videoTitle,
                 caption: `🎵 *${videoTitle}*`,
                 parse_mode: "Markdown",
-                thumbnail: thumbnail,
-            },
-            // {
-            //     filename: `${videoTitle}.mp3`,
-            // }
+                thumbnail: thumbnailUrl,
+            }
         );
 
         // Increment message count

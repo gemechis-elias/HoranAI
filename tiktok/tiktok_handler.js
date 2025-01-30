@@ -52,7 +52,7 @@ async function tiktokHandler(bot, chatId, tiktokUrl) {
 
         // Send the video file to the user
         await bot.sendVideo(chatId, videoStream, {
-            caption: `🎥 @horansoftware `,
+            // caption: `🎥 @horansoftware `,
             parse_mode: "Markdown",
         });
 

@@ -2,7 +2,8 @@ require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const { correctGrammar, getUserInfo } = require('./helpers');
-const db = require('./controller.js');
+const db = require('./controller');
+const { isUserMemberOrSubscribed } = require('./controller');
 const { handleInlineContent } = require('./inline_query');
 const fs = require('fs');
 const { extractTextFromImage } = require('./text_from_image/image_handler.js');
@@ -175,7 +176,7 @@ bot.on('message', async (msg) => {
 
 
     // Check if the user is a member of the channel or a premium subscriber
-    const isMemberOrSubscribed = await isUserMemberOrSubscribed(chatId);
+    const isMemberOrSubscribed = await isUserMemberOrSubscribed(bot, chatId);
        // Increment the message count and check if the user can continue
     const { canSend } = await db.checkMessageCount(chatId);
     if (!isMemberOrSubscribed && !canSend) {
@@ -264,41 +265,6 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, "An error occurred while processing your message.");
     }
 });
-
-
-async function isUserMemberOrSubscribed(chatId) {
-    try {
-        // Check if the user is a member of the channel
-        const channelUsername = "@horansoftware"; 
-        const memberStatus = await bot.getChatMember(channelUsername, chatId);
-        
-
-        if (
-            memberStatus.status === "member" ||
-            memberStatus.status === "administrator" ||
-            memberStatus.status === "creator"
-        ) {
-            return true; // User is a member
-        }
-
-        // Check if the user is a premium subscriber
-        const { data, error } = await supabase
-            .from("users")
-            .select("is_premium")
-            .eq("user_id", chatId)
-            .single();
-
-        if (error) {
-            console.error("Error fetching user subscription status:", error.message);
-            return false; // Assume not subscribed on error
-        }
-
-        return data?.is_premium || false; // Return true if the user is premium, false otherwise
-    } catch (error) {
-        console.error("Error checking membership or subscription:", error.message);
-        return false; // Default to not a member or subscribed
-    }
-}
 
 
 console.log("HoranBot is running!");

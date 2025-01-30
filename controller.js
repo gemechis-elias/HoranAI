@@ -207,4 +207,38 @@ async function getTotalUsers() {
     }
 }
 
-module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage, checkMessageCount, getTotalUsers};
+async function isUserMemberOrSubscribed(bot, chatId) {
+    try {
+        // Check if the user is a member of the channel
+        const channelUsername = "@horansoftware"; 
+        const memberStatus = await bot.getChatMember(channelUsername, chatId);
+        
+
+        if (
+            memberStatus.status === "member" ||
+            memberStatus.status === "administrator" ||
+            memberStatus.status === "creator"
+        ) {
+            return true; // User is a member
+        }
+
+        // Check if the user is a premium subscriber
+        const { data, error } = await supabase
+            .from("users")
+            .select("is_premium")
+            .eq("user_id", chatId)
+            .single();
+
+        if (error) {
+            console.error("Error fetching user subscription status:", error.message);
+            return false; // Assume not subscribed on error
+        }
+
+        return data?.is_premium || false; // Return true if the user is premium, false otherwise
+    } catch (error) {
+        console.error("Error checking membership or subscription:", error.message);
+        return false; // Default to not a member or subscribed
+    }
+}
+
+module.exports = { saveUser, incrementMessageCount, getMessageCount, getUserSettings, updateUserLanguage, getUserDefaultLanguage, checkMessageCount, getTotalUsers, isUserMemberOrSubscribed };

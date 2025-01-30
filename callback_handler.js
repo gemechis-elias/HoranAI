@@ -2,6 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 const db = require('./controller');
 const { correctGrammar } = require('./helpers');
+const { isUserMemberOrSubscribed } = require('./controller');
 
 
 async function handleCallBackQuery(bot, query) {
@@ -92,7 +93,7 @@ async function handleTranslation(bot, chatId, query, defaultLanguage) {
         const translatedText = decodeURIComponent(response.data.translatedText);
 
         const { canSend, totalMessages } = await checkDailyLimit(chatId);
-        if (!canSend) return sendLimitReached(bot, chatId);
+        if (!canSend && !isUserMemberOrSubscribed(bot, chatId)) return sendLimitReached(bot, chatId);
 
         await bot.sendMessage(
             chatId,
@@ -117,7 +118,7 @@ async function handleGrammarFix(bot, chatId, query) {
         const correctedText = await correctGrammar(message.text);
 
         const { canSend, totalMessages } = await checkDailyLimit(chatId);
-        if (!canSend) return sendLimitReached(bot, chatId);
+        if (!canSend && !isUserMemberOrSubscribed(bot, chatId)) return sendLimitReached(bot, chatId);
 
         await bot.sendMessage(
             chatId,
@@ -238,10 +239,7 @@ async function checkDailyLimit(chatId) {
 function sendLimitReached(bot, chatId) {
     bot.sendMessage(
         chatId,
-        "🚨 Oops! You've reached your daily message limit (10 messages). 😔\n\n" +
-            "But don't worry! You can continue using the bot by buying more credits! 💳✨\n\n" +
-            "👉 Click below to check out your subscription options and get more credits to keep chatting!\n\n" +
-            "🛒 /subscription\n\n💰 <b>Daily Credits Left</b>: 0",
+        "🚨 Oops! You've reached your daily message limit (10 messages). To use this bot, please follow our channel for updates or subscribe to premium. \n\n👉 [Follow Our Channel](https://t.me/hora_software)",
         { parse_mode: 'HTML' }
     );
 }

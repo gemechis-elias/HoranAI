@@ -16,12 +16,9 @@ HoranAI is a Node.js-powered Telegram bot designed for All in one Tool using the
 - **Youtube Video Download:** Download Youtube videos by sending the video link.
 - **Tiktok Video Download:** Download Tiktok videos by sending the video link.
 - **OCR:** Extract text from images using Optical Character Recognition.
-- **Inline Buttons:**
+- **Inline Query :** Use the bot in any chat
   - `Translate`: Translates the corrected message.
   - `Grammar Fix`: Fixes grammatical errors again.
-  - `Delete`: Deletes the bot's message and the user's last message.
-  - `Settings`: Displays user profile information.
-  - `Help`: Provides guidance on how to use the bot.
 
 ## Getting Started
 
